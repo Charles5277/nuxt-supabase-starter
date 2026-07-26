@@ -56,10 +56,16 @@ const FALLBACK_FORBIDDEN_TOKENS = [
 ]
 
 const FALLBACK_PERSONAL_NEEDLES = [
+  // macOS home layout
   '/Users/charles/.local/bin/',
   '/Users/charles/offline/clade',
   '/Users/charles/offline/',
   '/Users/charles/',
+  // Linux home layout — 逐字比對，缺一邊等於該平台上完全偵測不到洩漏
+  '/home/charles/.local/bin/',
+  '/home/charles/offline/clade',
+  '/home/charles/offline/',
+  '/home/charles/',
   'charles@yudefine.com.tw',
   'yudefine.com.tw',
 ]
