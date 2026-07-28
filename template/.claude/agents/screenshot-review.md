@@ -476,7 +476,7 @@ console.log("clients:", clientScripts.map(k=>k.replace(/^dev:/,"")).join(","));
 
 - **single-client repo** → 安全，直接跑 reset 命令
 - **multi-client repo + 截圖 host port 對應 default client**（通常 `dev:<client-a>` / `dev` alias / `dev:default`）→ 安全，直接跑
-- **multi-client repo + host port 對應非 default client**（如 <consumer-a> `:3045` 是 shared，`:3040` 是 <client-a> default）→ **MUST** 停下回報主 session：「`<URL>` 對應非 default client `<client>`，db:reset 預設指向 BigByte LXC 不會處理 `<client>` backend；請手動補對應 seed 後 retry。」**NEVER** 自動跑
+- **multi-client repo + host port 對應非 default client**（如 <consumer-a> `:3045` 是 shared，`:3040` 是 <client-a> default）→ **MUST** 停下回報主 session：「`<URL>` 對應非 default client `<client>`，db:reset 預設指向 <client-a> LXC 不會處理 `<client>` backend；請手動補對應 seed 後 retry。」**NEVER** 自動跑
 
 **Step 4 — 補 mock + 跑 reset**（通過 Step 3.5 gate 後）：
 

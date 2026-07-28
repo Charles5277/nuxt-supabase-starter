@@ -11,7 +11,7 @@
  * 與 nuxt-ui-mixed-slot 同一個 failure class：靜默視覺回退，機械層以外抓不到。
  *
  * ⚠️ 帶 `{ row }` 的 slot 不必然是 cell slot —— consumer 自家 wrapper 元件
- *    （如 perno `AppDataTable` 的 `#mobile-card`）也會解構 `row`。因此偵測範圍
+ *    （如 <consumer-a> `AppDataTable` 的 `#mobile-card`）也會解構 `row`。因此偵測範圍
  *    **只限 `<UTable>…</UTable>` 區塊內**；STRUCTURAL_SLOTS 再排掉 UTable 自身的
  *    非 accessorKey slot，**不可**當成「已知違規的豁免清單」拿來塞繞過用。
  *
@@ -63,7 +63,7 @@ const CHECKER = 'utable-slots'
  *
  * **只掃 `<UTable>…</UTable>` 區塊內**的 slot。帶 `{ row }` 的 slot 在 UTable 之外
  * 是合法的（consumer 自家 wrapper 元件如 `AppDataTable` 的 `#mobile-card`），對整份
- * 檔案掃描會把那些全報成違規——實測 perno 一家就 20+ 個 false positive。
+ * 檔案掃描會把那些全報成違規——實測 <consumer-a> 一家就 20+ 個 false positive。
  *
  * @param {string} src
  * @returns {{ line: number, slot: string, text: string }[]}

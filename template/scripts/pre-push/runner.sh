@@ -26,7 +26,7 @@
 #
 # 為什麼並行跑（2026-07-26）：
 #   7 個 check 彼此獨立（typecheck 寫 .nuxt/，其餘皆唯讀掃描，無共享寫入），
-#   序列跑等於把每個 check 的耗時相加。TDMS 實測序列 ≈ 98s，其中
+#   序列跑等於把每個 check 的耗時相加。<consumer-b> 實測序列 ≈ 98s，其中
 #   nuxt-typecheck 57.9s + review-rules-ratchet 39.2s 佔 99%，其餘五項合計
 #   < 0.6s。propagate.mjs 的 push timeout 是 120s，序列跑的餘裕薄到會被機器
 #   負載變異衝破（v1.4.340 / .341 / .342 連續三版在 propagate 內 timeout，

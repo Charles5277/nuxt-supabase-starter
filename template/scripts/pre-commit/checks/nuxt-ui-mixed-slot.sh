@@ -9,7 +9,7 @@
 #   - pre-commit checks/nuxt-ui-mixed-slot.sh : 只掃本次 staged *.vue（blocking，最接近犯錯時點）
 #   - pre-push  checks/nuxt-ui-mixed-slot.sh  : 掃全 repo *.vue（blocking 回溯型；fleet 基線 0 hit）
 #
-# 實證：TDMS /reports/daily-machining 空白 18 天（commit 5aa52e92 重構成 named slots
+# 實證：<consumer-b> /reports/daily-machining 空白 18 天（commit 5aa52e92 重構成 named slots
 # 但留一個 slideover 在 template 外）。typecheck / lint / console 全綠。
 #
 # Auto-detect：只掃本次 commit staged 的 *.vue；無 staged .vue 直接跳過（no-op exit 0）。

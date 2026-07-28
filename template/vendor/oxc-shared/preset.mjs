@@ -2,7 +2,7 @@
 //
 // Single source of truth for `vite.config.ts` lint/fmt rules across:
 //   - clade itself
-//   - perno / TDMS / nuxt-edge-agentic-rag / yuntech-usr-sroi / nuxt-supabase-starter
+//   - <consumer-a> / <consumer-b> / <consumer-c> / <consumer-d> / nuxt-supabase-starter
 //
 // Consumer usage:
 //
@@ -56,11 +56,11 @@ export const lintBase = {
     // stylistic noise here. Explicit pin off prevents CI lint drift on oxlint
     // version bumps (same pattern as no-underscore-dangle below).
     'unicorn/consistent-function-scoping': 'off',
-    // perno 2026-05-14: oxlint ^0.1.21 patch upgrade flipped this from warn→error.
+    // <consumer-a> 2026-05-14: oxlint ^0.1.21 patch upgrade flipped this from warn→error.
     // Explicit pin keeps `_serviceClient` / fixture private prefix conventions
     // from breaking CI lint gate on lockfile regen. `allow` covers:
     //   __dirname / __filename — Node ESM reconstructions (via fileURLToPath)
-    //   _serviceClient — Supabase admin-client private convention (perno / sroi)
+    //   _serviceClient — Supabase admin-client private convention (<consumer-a> / sroi)
     //   _samples / _corrupt / _evlogFlushPromise — internal audit/digest fields
     //     in vendor/scripts/*, plugins/hub-core/scripts/commit-lock.mjs, and
     //     vendor/snippets/evlog-drain-pipeline/* (all propagate to consumers).

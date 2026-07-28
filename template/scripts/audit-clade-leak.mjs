@@ -3,9 +3,9 @@
  * audit-clade-leak.mjs — starter consumer 公開倉 0-leak audit
  *
  * 用途：`nuxt-supabase-starter` 是公開 GitHub repo。clade 中央倉的 rule /
- * skill / commands / agents 內含 consumer 名稱（perno / TDMS / edge-rag /
- * yuntech-usr-sroi / nuxt-edge-agentic-rag）、personal path (`/Users/charles/`)、
- * personal email (`charles@yudefine.com.tw`)、客戶名 (bigbyte / fongchen)、
+ * skill / commands / agents 內含 consumer 名稱（<consumer-a> / <consumer-b> / <consumer-c> /
+ * <consumer-d> / <consumer-c>）、personal path (`~/`)、
+ * personal email (`<maintainer-email>`)、客戶名 (<client-a> / <client-b>)、
  * 以及未該對外曝光的 maintainer skill (`oops` / `improvement-loop` / `review-rules`)。
  *
  * Sanitization 應在 clade 端 propagate 時自動處理；本 audit script 是 CI gate
@@ -73,23 +73,23 @@ const FALLBACK_FORBIDDEN_TOKENS = [
 
 const FALLBACK_PERSONAL_NEEDLES = [
   // macOS home layout
-  '/Users/charles/.local/bin/',
-  '/Users/charles/offline/clade',
-  '/Users/charles/offline/',
-  '/Users/charles/',
+  '<HOME>/.local/bin/',
+  '<clade-central-repo>',
+  '<home>/offline/',
+  '~/',
   // Linux home layout — 逐字比對，缺一邊等於該平台上完全偵測不到洩漏
-  '/home/charles/.local/bin/',
-  '/home/charles/offline/clade',
-  '/home/charles/offline/',
-  '/home/charles/',
-  'charles@yudefine.com.tw',
-  'yudefine.com.tw',
+  '<HOME>/.local/bin/',
+  '<clade-central-repo>',
+  '<home>/offline/',
+  '~/',
+  '<maintainer-email>',
+  '<maintainer-domain>',
 ]
 
 // 上面那份是逐字 needle，只認 `charles` 這個 username。這條 regex 補「任意 username ×
 // 兩平台」，來源是 `vendor/signals/redact.mjs` 的 `home-path` pattern（同一份語義，
 // 那邊已在 signal payload 上用了很久）。兩者並存：needle 命中時 token 可讀
-// （`/Users/charles/offline/`），regex 負責兜住 needle 蓋不到的 username。
+// （`<home>/offline/`），regex 負責兜住 needle 蓋不到的 username。
 const HOME_PATH_RE = /\/(?:Users|home)\/([^/\s"']+)/g
 
 // 文件裡示範用的佔位路徑（`/Users/<you>/…`、`/Users/...`、`/home/$USER/…`）不是洩漏。
@@ -104,7 +104,7 @@ const MAINTAINER_ONLY_SKILLS = ['oops', 'improvement-loop', 'review-rules']
 // `sync-to-codex.mjs` 的 cleanup() 每輪 `rm -rf .agents/` 除 skills 外全部 ——
 // 於是檔案在 worktree 消失、在 index/HEAD/remote 永存（propagate 的 selective
 // `--only` 永遠不會撿起這條 deletion）。內容是投影來源的**絕對路徑**，918–982 條
-// `/Users/charles/...`，含全套 skill 名稱清單，已 push 進兩個 public repo。
+// `~/...`，含全套 skill 名稱清單，已 push 進兩個 public repo。
 //
 // 為什麼要獨立一個 scope：這個檔既不在 `.claude/` 底下、也不在 `.hub-state.json`
 // checksums 內，scope (2) 兩個條件都不滿足；而且**磁碟上不存在**，`existsSync` 一律
@@ -241,6 +241,25 @@ async function readTrackedBlob(repoRoot, rel) {
   }
 }
 
+const TEXTUAL_REL_RE = /\.(md|mjs|cjs|js|mts|cts|ts|json|jsonc|sh|bash|zsh|yml|yaml|txt)$/i
+
+// git tracked 檔案清單（限定前綴）。用 git 而非 readdir：未 tracked 的東西不算
+// 洩漏，掃它只會製造假陽性。
+async function listTrackedUnder(repoRoot, prefixes) {
+  try {
+    const { stdout } = await execFileAsync('git', ['ls-files', '--', ...prefixes], {
+      cwd: repoRoot,
+      maxBuffer: 64 * 1024 * 1024,
+    })
+    return stdout
+      .split('\n')
+      .map((l) => l.trim())
+      .filter(Boolean)
+  } catch {
+    return []
+  }
+}
+
 async function auditOneRoot(repoRoot) {
   const violations = []
   const errors = []
@@ -272,8 +291,8 @@ async function auditOneRoot(repoRoot) {
       // symlink 模式的 consumer（`.claude/rules/*.md` → `.clade/runtime/rules/`）：
       // git 裡存的是 mode 120000 的 53-byte 路徑字串，**target 未 tracked**，所以那些
       // 內容根本沒有被公開。readFile 會跟隨 symlink 讀到本機檔案，於是把「本機有」
-      // 誤報成「已洩漏」——2026-07-26 實測讓 agentic-rag 虛報 39 處 perno / 32 處
-      // TDMS / 5 處 bigbyte，全部來自未 tracked 的 symlink target。
+      // 誤報成「已洩漏」——2026-07-26 實測讓 agentic-rag 虛報 39 處 <consumer-a> / 32 處
+      // <consumer-b> / 5 處 <client-a>，全部來自未 tracked 的 symlink target。
       // 公開洩漏的判準是「git 裡有什麼」，不是「檔案系統上有什麼」。
       let stats
       try {
@@ -295,6 +314,22 @@ async function auditOneRoot(repoRoot) {
       for (const token of hits) {
         violations.push({ path: rel, token })
       }
+    }
+  }
+
+  // (2b) `.clade/**` —— clade 投影出去、但不在 hub-state checksums 內的那一層。
+  // 這裡曾是完全的盲區：`.clade/registry/consumers.json` 放著整份 fleet 名冊
+  // （每個 consumer_id + repo_id，含客戶 org 名），是 TD-274 裡單項最嚴重的洩漏，
+  // 而 audit 從頭到尾沒掃過它——清完 checksums 那層會以為已經乾淨。
+  //
+  // 判準一律是「git 裡有什麼」：symlink 在 git 裡只是路徑字串，讀 blob 天然不會
+  // 把未 tracked 的 target 內容誤報成已洩漏（TD-274 § 兩個量測錯誤）。
+  for (const rel of await listTrackedUnder(repoRoot, ['.clade', 'template/.clade'])) {
+    if (!TEXTUAL_REL_RE.test(rel)) continue
+    const blob = await readTrackedBlob(repoRoot, rel)
+    if (blob === null) continue
+    for (const token of scanForbiddenTokens(blob)) {
+      violations.push({ path: rel, token })
     }
   }
 

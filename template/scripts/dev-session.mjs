@@ -5,7 +5,7 @@
  * 為什麼存在（root cause）：
  *   agent（Claude Code / Codex）的 harness 會在 tool-call 生命週期結束時回收
  *   Bash 衍生的整個 process tree —— **連 `spawn(detached:true)+unref()` / setsid /
- *   nohup 都逃不掉**（實測 2026-06-01 perno：run_in_background 與 setsid 起的 nuxt
+ *   nohup 都逃不掉**（實測 2026-06-01 <consumer-a>：run_in_background 與 setsid 起的 nuxt
  *   dev 都被 reap，唯獨掛在 tmux/zellij server daemon 下的存活）。dev-singleton.mjs
  *   的 `spawn(detached:true)` 同樣會被回收。
  *
@@ -174,12 +174,12 @@ function resolveConsumerId(o, meta) {
   // **MUST 解析 main worktree 的名字，不是當前 worktree 的目錄名。**
   //
   // `git rev-parse --show-toplevel` 在 linked worktree 內回的是**該 worktree 的路徑**
-  // （例：.../perno-wt/td-279-280-submit-chain），basename 就變成 slug 而不是 consumer 名。
+  // （例：.../<consumer-a>-wt/td-279-280-submit-chain），basename 就變成 slug 而不是 consumer 名。
   // 後果：lease 檔路徑算成 /tmp/<slug>-verification-lease.json —— 跟 main 用的
   // /tmp/<consumer>-verification-lease.json 是**不同檔案**。於是從 worktree 跑、又沒帶
   // --consumer-meta 的指令會靜默操作錯的 lease：release 釋放不到、conflict 偵測不到，
-  // 跨 worktree 的 lease 隔離形同虛設（2026-07-26 perno 實證：worktree 內 `stop` 後
-  // /tmp/perno-verification-lease.json 原封不動殘留）。
+  // 跨 worktree 的 lease 隔離形同虛設（2026-07-26 <consumer-a> 實證：worktree 內 `stop` 後
+  // /tmp/<consumer-a>-verification-lease.json 原封不動殘留）。
   //
   // `--git-common-dir` 在 main 回 `<repo>/.git`、在 linked worktree 回
   // `<main-repo>/.git/worktrees/<slug>`；兩者的 dirname 往上找到 `.git` 的父層即 main worktree。
@@ -362,7 +362,7 @@ function releaseLease(o, consumerId) {
 }
 
 // cwd 比對 MUST 正規化後再比。lease 內的 cwd 是寫入當下的 `o.cwd`，而 `--cwd` 由 caller 傳，
-// 可能是相對路徑（`.` / `../perno`）、帶結尾斜線、或走 symlink 的等價路徑。裸字串比對把這些
+// 可能是相對路徑（`.` / `../<consumer-a>`）、帶結尾斜線、或走 symlink 的等價路徑。裸字串比對把這些
 // 等價形式判成「不同 worktree」，兩個方向都會出錯：strict 模式對自己那台 refuse（擋掉合法
 // 操作），或 --takeover 誤殺自己剛起的 dev server。
 function canonicalCwd(p) {

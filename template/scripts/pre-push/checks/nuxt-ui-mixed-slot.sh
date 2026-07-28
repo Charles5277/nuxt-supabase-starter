@@ -10,7 +10,7 @@
 #   - pre-push  checks/nuxt-ui-mixed-slot.sh  : 掃全 repo *.vue（blocking 回溯型；2026-07-06
 #                                               全 fleet 掃描基線 0 hit，可直接 blocking）
 #
-# 實證：TDMS /reports/daily-machining 空白 18 天（pitfall:
+# 實證：<consumer-b> /reports/daily-machining 空白 18 天（pitfall:
 # 2026-07-06-nuxt-ui-named-slot-default-fallback-shadowing，TD-236）。
 #
 # Auto-detect：偵測 nuxt.config.* 存在才跑；非 Nuxt repo 自動 no-op（exit 0）。

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Dev router — 常駐 L4 TCP proxy + worktree backend switcher（consumer-agnostic，clade vendor）.
 //
-// 為什麼存在：tunnel（perno-bigbyte-dev.yudefine.com.tw）固定指向一個公開 port，
+// 為什麼存在：tunnel（<consumer-a>-<client-a>-dev.<maintainer-domain>）固定指向一個公開 port，
 // 但開發時常在多個 git worktree 之間切換。每切一次 dir + 重啟 nuxt dev + 重啟
 // tunnel 很煩。dev-router 用 L4 TCP proxy 佔住公開 port（3040 / 3045），背後把
 // 流量整段雙向 pipe 到「當前 active worktree backend 的 nuxt dev server」。切換
@@ -15,13 +15,13 @@
 // HMR ws 與 allowedHosts 不被破壞。零新增 npm dependency。
 //
 // 用法：
-//   pnpm dev:router:bigbyte           # 啟動常駐 router（proxy + control UI + tunnel + main backend）
+//   pnpm dev:router:<client-a>           # 啟動常駐 router（proxy + control UI + tunnel + main backend）
 //   pnpm dev:router:shared
 //   node scripts/dev-router.mjs list             # 列當前 state
 //   node scripts/dev-router.mjs use <slug>       # 切 active backend
 //   node scripts/dev-router.mjs stop <slug>      # 停某 backend（active 拒絕）
 //
-// control UI：http://127.0.0.1:<controlPort>（controlPort = publicPort + 300；perno bigbyte 3040→3340）
+// control UI：http://127.0.0.1:<controlPort>（controlPort = publicPort + 300；<consumer-a> <client-a> 3040→3340）
 
 import { parseArgs } from 'node:util'
 import net from 'node:net'
@@ -581,7 +581,7 @@ async function runDaemon() {
     console.log(`[dev-router] copied ${envFile} → ${worktreePath}`)
   }
 
-  // ── spawn backend nuxt dev（mirror dev:bigbyte 的 nuxt 子命令）──
+  // ── spawn backend nuxt dev（mirror dev:<client-a> 的 nuxt 子命令）──
   function spawnBackend(slug, worktreePath, backendPort) {
     ensureEnvFile(worktreePath)
     console.log(`[dev-router] spawning backend "${slug}" on :${backendPort} (cwd=${worktreePath})`)

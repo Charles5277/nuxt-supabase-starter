@@ -4,7 +4,7 @@
 # mutation-loading (pre-push, 全 repo) — 回溯型掃描全 repo *.vue 的 Pinia Colada mutation
 # status === 'pending' 當 loading（永久 spinner 靜默 bug）。
 #
-# warn-only：命中只印警告、不阻擋 push。理由：fleet 有大量歷史既有命中（如 perno 30+），
+# warn-only：命中只印警告、不阻擋 push。理由：fleet 有大量歷史既有命中（如 <consumer-a> 30+），
 # 全擋會癱瘓 push。新增違規由 pre-commit blocking 版擋在源頭；本 check 只做「全站事實提醒」，
 # 讓既有違規逐步清償。等某 consumer 清到 0 後，可在自家 runner 把本 check 改成 blocking。
 #

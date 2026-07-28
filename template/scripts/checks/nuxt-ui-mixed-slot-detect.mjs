@@ -7,7 +7,7 @@
  * **default slot 的 fallback content**。Vue 編譯規則：component children 混用
  * `<template #named>` 與非 template 元素時，非 template 元素被編譯成 default slot
  * → `slots.default` 存在 → named slots 整組靜默不 render。頁面全空、console 零錯誤、
- * typecheck / lint 全綠（TDMS /reports/daily-machining 空白 18 天實證）。
+ * typecheck / lint 全綠（<consumer-b> /reports/daily-machining 空白 18 天實證）。
  *
  * 正解：UDashboardPanel 直接子元素**只能**二擇一 —
  *   (a) 全部 `<template #...>` named slots；或 (b) 全部 default slot 內容。

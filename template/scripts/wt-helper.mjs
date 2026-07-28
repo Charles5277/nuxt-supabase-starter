@@ -333,7 +333,7 @@ function runOxfmtStdin(text, filePath, cwd) {
 // auto-repairs). That leaves every worktree permanently showing ` M .npmrc`,
 // which the pre-flight then reports as user WIP and refuses to merge-back on
 // — i.e. wt-helper's own bootstrap blocks wt-helper's own landing path
-// (perno TD-252, hit by all 4 lanes on 2026-07-26).
+// (<consumer-a> TD-252, hit by all 4 lanes on 2026-07-26).
 //
 // It must NOT go through the auto-commit branch either: committing it would
 // carry `install` into main, silently flipping main's pnpm behaviour. Since
@@ -916,7 +916,7 @@ async function cmdAdd(slug, opts = {}) {
   // under `refs/wt-baseline/<slug>/<iso>` so the object stays reachable even
   // after worktree cleanup. Without this pin, the stash becomes unreachable
   // and the 47+ baseline files live only in the worktree's working tree —
-  // `wt-helper cleanup` then permanently destroys them (incident: TDMS
+  // `wt-helper cleanup` then permanently destroys them (incident: <consumer-b>
   // 2026-05-17, kpi-prod-design-review-refresh). `wt-helper rescue` lists
   // these refs for recovery.
   if (pendingStashName) {
@@ -926,7 +926,7 @@ async function cmdAdd(slug, opts = {}) {
       // (or untracked, for -u stash entries). git-stash-apply restores the stash's
       // staged state, including untracked files brought in via `-u`. Without this
       // reset, a subsequent `git add -- <single-file>` won't unstage the baseline
-      // files, leading to scope leak in the next commit (TDMS 2026-05-18 incident:
+      // files, leading to scope leak in the next commit (<consumer-b> 2026-05-18 incident:
       // fix-devlogin-loopback commit picked up 46 files / 7472 insertions).
       // See pitfall-wt-helper-baseline-staged-index.
       git(['reset', 'HEAD', '--'], { cwd: wtPath, stdio: 'inherit' })
@@ -953,7 +953,7 @@ async function cmdAdd(slug, opts = {}) {
       //     surfaces files modified in working tree at stash time, which the stash
       //     commit carries forward).
       //
-      // See pitfall-pre-fork-baseline-hides-in-flight-feature (2026-05-18 TDMS
+      // See pitfall-pre-fork-baseline-hides-in-flight-feature (2026-05-18 <consumer-b>
       // fix-vending-dispatch-dialog incident, 53-file vending feature stack lost from
       // main). Original audit only inspected `^3` — tracked-file feature drift slipped
       // through silently.
@@ -1429,7 +1429,7 @@ export function classifyUnmergedSafety(consumerRoot, conflicted) {
 // those paths and restores the prior index afterward. Crucially the bare
 // `git commit -m` previously used here committed the WHOLE index, so any
 // OTHER-session WIP already pre-staged in main's index got folded into the
-// pre-fork baseline commit (perno per-client-module-isolation hit this: main's
+// pre-fork baseline commit (<consumer-a> per-client-module-isolation hit this: main's
 // index had badge-wt salary/overtime staged). `--only` isolates exactly
 // scopePaths, aligning with rules/core/commit.md «Ad-hoc commit 必走
 // git commit --only». Used by pre-fork baseline guard's `commit` strategy.
@@ -1502,7 +1502,7 @@ function detectMergeBlockers(consumerRoot, branchName) {
 // Detect uncommitted files in a session worktree's working tree. These would
 // be permanently destroyed by `git worktree remove --force` — distinct from
 // detectUnlandedFiles which only checks committed branch HEAD vs main. Gate
-// added after TDMS 2026-05-17 incident where 47 baseline files lived only in
+// added after <consumer-b> 2026-05-17 incident where 47 baseline files lived only in
 // the worktree's working tree (applied from stash, never committed) and
 // vanished on cleanup.
 function detectUncommittedWorktreeFiles(wtPath) {
@@ -1996,7 +1996,7 @@ async function cmdCleanup(slug, opts) {
   // Pre-check ALL gates upfront so the error message can recommend the
   // full flag combo in one go, rather than ping-ponging the user between
   // --force / --force-discard-unland / --force-discard-uncommitted.
-  // The third gate (uncommitted) was added after TDMS 2026-05-17 incident
+  // The third gate (uncommitted) was added after <consumer-b> 2026-05-17 incident
   // where 47 baseline files lived only in the worktree's working tree
   // (applied from stash, never committed) and vanished on cleanup.
   const branchMerged = mergedBranches(consumerRoot).has(branchName)
@@ -2006,7 +2006,7 @@ async function cmdCleanup(slug, opts) {
   // merge-back breaks in half: cmdMergeBack squashes successfully, then calls cmdCleanup,
   // which still counts `.npmrc` as uncommitted and refuses. Result is
   // "absorbed into main (cleanup skipped/failed)" on **every** lane, each needing a manual
-  // --force-discard-uncommitted to finish (perno's 4 lanes, 2026-07-26).
+  // --force-discard-uncommitted to finish (<consumer-a>'s 4 lanes, 2026-07-26).
   //
   // Only `modified` is filtered: isToolManagedDrift compares against HEAD, which an
   // untracked file has no version of.
@@ -2149,7 +2149,7 @@ async function cmdMergeBack(slug, opts = {}) {
   const branchName = target.branch.replace('refs/heads/', '')
   const blockers = detectMergeBlockers(consumerRoot, branchName)
 
-  // Pre-flight: worktree dirty tracked-file check (TDMS-1J 2026-05-18 incident).
+  // Pre-flight: worktree dirty tracked-file check (<consumer-b>-1J 2026-05-18 incident).
   // detectMergeBlockers only catches files in main that would be overwritten;
   // it doesn't see edits inside the worktree that were never committed. Without
   // this check, `git merge --squash` silently drops worktree WIP, then cleanup
@@ -2197,7 +2197,7 @@ async function cmdMergeBack(slug, opts = {}) {
 
   // Surface pinned pre-fork baselines for this slug so the user knows what's
   // available for rescue if cleanup later detects uncommitted-baseline loss
-  // (cmdCleanup --force-discard-uncommitted gate, post-TDMS 2026-05-17 fix).
+  // (cmdCleanup --force-discard-uncommitted gate, post-<consumer-b> 2026-05-17 fix).
   let baselineRefs = []
   try {
     const raw = git(['for-each-ref', '--format=%(refname)', `refs/wt-baseline/${cleanSlug}/`], {
@@ -2534,7 +2534,7 @@ async function cmdMergeBack(slug, opts = {}) {
       // Bulk stash (no pathspec) — matches cmdAdd's baseline-stash strategy.
       // Previously this used `git stash push -u -m <msg> -- <blocker-paths>`,
       // but `git stash push -u` with pathspec hits a scope-leak bug on
-      // git 2.50.1 (TDMS 2026-05-18: 22 blockers requested → 74 files stashed
+      // git 2.50.1 (<consumer-b> 2026-05-18: 22 blockers requested → 74 files stashed
       // including unrelated main tracked-tree mods). Bulk stash makes the
       // semantics explicit: "snapshot main's dirty state so squash can land,
       // user reconciles via stash-reconcile.mjs". See pitfall-git-stash-

@@ -3,7 +3,7 @@
 /**
  * dev-singleton.mjs — clade-managed dev server singleton wrapper
  *
- * Generalized from TDMS scripts/singleton.mjs. Propagated into each consumer's
+ * Generalized from <consumer-b> scripts/singleton.mjs. Propagated into each consumer's
  * vendor/scripts/ by clade sync-vendor. Consumer wires up via package.json:
  *
  *   "dev:agent":  "node vendor/scripts/dev-singleton.mjs --consumer-meta .claude/consumer-meta.json -- pnpm dev"

@@ -219,14 +219,14 @@ group_block_for() {
 # grep the consumer's `.env*` for TUNNEL_HOSTNAME so the remediation carries the
 # concrete tunnel host the author should swap in. Different model from
 # run_page_display_check: this one can also SUPPRESS the hit when the consumer
-# has no tunnel configured (e.g. yuntech-usr-sroi) — return exit 1 → main loop
+# has no tunnel configured (e.g. <consumer-d>) — return exit 1 → main loop
 # `continue`s past the hit. Returns evidence string on stdout + exit 0 when the
 # hit should fire; exits 1 when the hit should be suppressed.
 run_tunnel_check() {
   local line="$1"
   local host=""
   local source_env=""
-  # Scan common env file names + any `.env.<app>` for multi-app consumers (perno).
+  # Scan common env file names + any `.env.<app>` for multi-app consumers (<consumer-a>).
   local candidates=("$REPO_ROOT/.env.local" "$REPO_ROOT/.env" "$REPO_ROOT/.env.development" "$REPO_ROOT/.env.dev")
   while IFS= read -r ef; do
     candidates+=("$ef")
@@ -423,7 +423,7 @@ for i in $(seq 0 $((PATTERN_COUNT - 1))); do
 
     # v1.6.0: UI_URL_LOCALHOST_WITH_TUNNEL_AVAILABLE — cross-file env check.
     # Suppress when consumer has no TUNNEL_HOSTNAME (legitimate localhost-only
-    # consumers like yuntech-usr-sroi); enrich when tunnel exists.
+    # consumers like <consumer-d>); enrich when tunnel exists.
     if [ "$CODE" = "UI_URL_LOCALHOST_WITH_TUNNEL_AVAILABLE" ]; then
       if ! tunnel_evidence=$(run_tunnel_check "$line"); then
         continue
