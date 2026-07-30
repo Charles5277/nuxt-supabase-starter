@@ -77,7 +77,7 @@
     "@pinia/nuxt": "^0.11.3",
     "@sentry/nuxt": "^10.46.0",
     "@supabase/supabase-js": "^2.100.0",
-    "better-auth": "^1.5.6",
+    "better-auth": "^1.6.11",
     "consola": "^3.4.2",
     "drizzle-orm": "^0.45.2",
     "evlog": "^2.16.0",
