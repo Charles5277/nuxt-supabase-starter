@@ -66,7 +66,7 @@ worktree subagent 完成每個 tasks.md phase section 的最後一個 `- [ ]` �
 git commit --only -m "📝 docs(spectra): phase N done (<change-name>)" -- openspec/changes/<change-name>/tasks.md
 ```
 
-type **MUST** 是 `📝 docs`，**NEVER** 是 `📝 spectra` —— 後者不在 conventional type 集合內，帶 emoji 型 `type-enum` 的 consumer（TDMS 等）會在 commit-msg hook 擋下，而報的錯是 `subject may not be empty`，跟真因對不上。
+type **MUST** 是 `📝 docs`，**NEVER** 是 `📝 spectra` —— 後者不在 conventional type 集合內，帶 emoji 型 `type-enum` 的 consumer（<consumer-b> 等）會在 commit-msg hook 擋下，而報的錯是 `subject may not be empty`，跟真因對不上。
 
 **Why**：`merge-back --squash` 只帶 committed changes 回 main。未 commit 的 checkbox 更新留在 worktree working tree → merge-back 不帶回 → review-gui 讀 main tasks.md 永遠看到 `[ ]` → impl-gate 誤判 <90%。
 
@@ -101,7 +101,7 @@ diff <(grep -n '^\s*- \[x\]' <main>/openspec/changes/<change>/tasks.md) \
 | 有 active worktree，但 main 端有 worktree 沒有的打勾項（diff 有 `<` 行） | main 這份是唯一記錄 → **NEVER** stash。依 [[worktree-baseline]] § 手動 selective sync 正解帶過去（`git -C <main> diff --binary HEAD -- <path> \| git -C <wt> apply`）再依 §9.5.1 commit。**NEVER** `git -C <wt> checkout main -- <path>` —— 它讀 main 的 **commit**，而本節前提正是那份改動未 commit |
 | 無 active worktree（已 merge-back / 已 archive） | main 就是 working truth → **NEVER** 以「working truth 在 worktree」為由處置 |
 
-**NEVER 只看 `git stash show --stat` 或 `git diff --stat` 判方向** —— `[ ]` → `[x]` 與 `[x]` → `[ ]` 在那裡給出**完全相同**的 insertions / deletions 數字（實證 2026-08-11 TDMS：`21 insertions(+), 21 deletions(-)`，訊息標「退化副本」，實際是多勾了 21 項）。
+**NEVER 只看 `git stash show --stat` 或 `git diff --stat` 判方向** —— `[ ]` → `[x]` 與 `[x]` → `[ ]` 在那裡給出**完全相同**的 insertions / deletions 數字（實證 2026-08-11 <consumer-b>：`21 insertions(+), 21 deletions(-)`，訊息標「退化副本」，實際是多勾了 21 項）。
 
 **NEVER** 因為 stash 訊息自稱那是過期內容就採信 —— 寫那句訊息的 session 依據的正是本節被外推的那句話。詳見 [[pitfall-main-side-tasks-md-tick-stashed-as-stale-copy]]。
 

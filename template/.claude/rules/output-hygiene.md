@@ -74,7 +74,7 @@ Session 內對 user 透明揭露錯誤是必要的（誠實 ≠ 隱瞞），但�
 
 ### 為何加這層
 
-MCP 規約（[[nuxt-ui-mcp]] 等）擋「亂湊 API surface」，但沒擋「拿合法 MCP fact 合成 prescriptive pattern claim」— 實證：2026-05-24 perno 把三條 MCP fact synth 成「Nuxt UI v3 規範 pattern」，被 user 標為**重大錯誤**。
+MCP 規約（[[nuxt-ui-mcp]] 等）擋「亂湊 API surface」，但沒擋「拿合法 MCP fact 合成 prescriptive pattern claim」— 實證：2026-05-24 <consumer-a> 把三條 MCP fact synth 成「Nuxt UI v3 規範 pattern」，被 user 標為**重大錯誤**。
 
 ### Hard rule
 

@@ -37,18 +37,18 @@ Local edits will be reverted by the next sync.
 
 凡 consumer 用 `vite-plugin-cloudflare-tunnel` 開 dev tunnel：
 
-- **MUST** Hostname 走 `<consumer-id>-dev.yudefine.com.tw`（org convention；既有對齊：`rental-scout-dev` / `tdms-dev` / `perno-shared-dev` / `co-purchase-dev`）
+- **MUST** Hostname 走 `<consumer-id>-dev.<maintainer-domain>`（org convention；既有對齊：`<consumer-h>-dev` / `tdms-dev` / `<consumer-a>-shared-dev` / `<consumer-e>-dev`）
 - **NEVER** 自由發揮挑其他 zone（如 `bigbyteedu.com` / 個人域名）— 即使 DNS / tunnel 建得起來，plugin 仍會因 token-zone account 不匹配 403 crash Nuxt
 - **MUST** `.env.local` 設三件套：
 
   ```env
-  TUNNEL_HOSTNAME=<consumer-id>-dev.yudefine.com.tw
+  TUNNEL_HOSTNAME=<consumer-id>-dev.<maintainer-domain>
   TUNNEL_NAME=<consumer-id>-dev
   CLOUDFLARE_API_KEY=<cfat_*-token>
   ```
 
 - **MUST** Token 用 `cfat_*` account API token，**絕非** `cfut_*`（Worker token）或 `r_*`（cert.pem 簽發的 tunnel-scoped token）
-  - 來源 1：rental-scout `.env.local` 的 `CLOUDFLARE_API_KEY`（既有可用）
+  - 來源 1：<consumer-h> `.env.local` 的 `CLOUDFLARE_API_KEY`（既有可用）
   - 來源 2：Notion `Scrects` → Cloudflare → YuDefine（待補；目前只列 cfut_）
   - 必備權限：`Cloudflare Tunnel:Edit`（account）+ `SSL and Certificates:Edit`（zone）+ `DNS:Edit`（zone）
   - **必要**：`SSL and Certificates:Edit` — plugin `dist/index.mjs:617` 必跑 `/zones/<id>/ssl/certificate_packs` GET 確認 edge cert，403 會 re-throw crash Nuxt（即使 Cloudflare Universal SSL 已涵蓋）
@@ -91,7 +91,7 @@ Wrapper 把這條鏈在第一步切斷：token verify 失敗 → log warn → �
 凡量測透過 `vite-plugin-cloudflare-tunnel` 開的 dev tunnel 頁面載入效能（人工或 agent CDP）：
 
 - **NEVER** 量測前 `clearBrowserCache` / `setCacheDisabled(true)` — 會強制走全新冷載入，把瀏覽器本機快取的 immutable dep 全部重抓。Vite dev 對 `?v=<hash>` 的 node_modules dep 送 `Cache-Control: max-age=31536000, immutable`；一個 Nuxt + @nuxt/ui v4 dev 頁面拆成 ~300–950 個 ES module 請求，cold 經 tunnel 逐一往返受 cloudflared 並發吞吐限制 → 30–60s，量測窗內看似 `pending` / hang
-- **MUST** 量「warm」反映日常情境：第一次載入 populate 瀏覽器快取（不計時）→ 第二次載入（不清快取）量 hydrate 時間。warm 數秒內 hydrate（實測 co-purchase 6.3s）= 正常；只有全新裝置 / 快取過期 / 無痕才會慢
+- **MUST** 量「warm」反映日常情境：第一次載入 populate 瀏覽器快取（不計時）→ 第二次載入（不清快取）量 hydrate 時間。warm 數秒內 hydrate（實測 <consumer-e> 6.3s）= 正常；只有全新裝置 / 快取過期 / 無痕才會慢
 - **NEVER** 把 cold 載入慢判成 tunnel 壞掉 → 一路試 CF cache rule `cache:false` / cloudflared `--protocol http2` / `keepAliveConnections` / 移 plugin / 降版（實證全無效）。慢 vs 快是 cache-warmth 連續譜，不是 broken 二元判斷
 - **MAY** 減少 cold-load 模組數：`import { x } from '@nuxt/ui/locale'` barrel import 會拉進整包 62 語言檔；改公開 subpath deep-import（`import x from '@nuxt/ui/runtime/locale/<lang>.js'`）只載需要的 locale
 
@@ -114,14 +114,14 @@ Wrapper 把這條鏈在第一步切斷：token verify 失敗 → log warn → �
 
 - **MUST** worktree 內用 `node vendor/scripts/wt-helper.ts dev [<alias>]` 起 dev server，**NEVER** 在 worktree 內跑 `pnpm dev`（那會吃 `package.json` 寫死的 base port，直接撞 main）
 - **MUST** main working tree 維持 §1 的顯式宣告不變 — `package.json` 的 `--port <base 字面數字>` 一個字都不改。offset 只存在於 worktree，由 `wt-helper` 在 `wt-helper add` 時分配
-- **NEVER** 手動挑 worktree port。offset 由 `pickDevPortOffset` 算，它同時排除三件事：mapped port 超出 `[base, base+9]`（會踩到下一個 consumer 的 base）、mapped port 撞到本 consumer 另一個宣告 port（perno 宣告 3040 + 3045，offset 5 會讓 `bigbyte` 蓋掉 `shared`）、offset 已被 sibling worktree 佔用
-- 宣告多個 port 的 consumer **帶寬較窄**：天花板由最高的宣告 port 決定（perno 只有 N ∈ 1..4，不是 1..9）
+- **NEVER** 手動挑 worktree port。offset 由 `pickDevPortOffset` 算，它同時排除三件事：mapped port 超出 `[base, base+9]`（會踩到下一個 consumer 的 base）、mapped port 撞到本 consumer 另一個宣告 port（<consumer-a> 宣告 3040 + 3045，offset 5 會讓 `<client-a>` 蓋掉 `shared`）、offset 已被 sibling worktree 佔用
+- 宣告多個 port 的 consumer **帶寬較窄**：天花板由最高的宣告 port 決定（<consumer-a> 只有 N ∈ 1..4，不是 1..9）
 - Offset 記錄在 `~/.cache/clade/dev-port/<consumer>/<slug>.json`，**不**寫進 repo（`.clade/` 在多數 consumer 未被 gitignore，寫進去會讓每個 worktree 帶一個 untracked 檔進 merge-back / publish 的 dirty 判定）。worktree 目錄消失即釋放槽位，不需要手動回收
 - 帶寬用盡時 `wt-helper dev` **fail-loud 拒絕啟動**，**NEVER** fallback 到 base port — 那正是本節要防的撞車
 
 #### Tunnel 在 worktree 內
 
-Tunnel hostname 是 **per-consumer 單一資源**（§2.5 的 `<consumer-id>-dev.yudefine.com.tw`）。N 個 worktree 共用一個 hostname 比共用一個 port 更糟：dev server 起得來、tunnel 也連得上，只是流量被**後啟動的那個** worktree 劫持，main 的畫面靜默變成別人的。
+Tunnel hostname 是 **per-consumer 單一資源**（§2.5 的 `<consumer-id>-dev.<maintainer-domain>`）。N 個 worktree 共用一個 hostname 比共用一個 port 更糟：dev server 起得來、tunnel 也連得上，只是流量被**後啟動的那個** worktree 劫持，main 的畫面靜默變成別人的。
 
 - **MUST** worktree 要開 tunnel 就走 `dev.perWorktreeTunnel` opt-in（`consumer-meta.json`），由 `vendor/scripts/wt-env-sync.ts` 改寫成 `<slug>.<host>` / `<name>-<slug>`
 - **NEVER** 沒開 opt-in 就在 worktree 內啟 tunnel。`wt-helper add` 會複製 `.env.local`（含 tunnel token，這是 `envSyncPolicy` 的既定行為），所以 token **存在不代表可以用**
@@ -149,23 +149,23 @@ Tunnel hostname 是 **per-consumer 單一資源**（§2.5 的 `<consumer-id>-dev
 
 | consumer | dev_ports.nuxt |
 | --- | --- |
-| perno | 3040 |
+| <consumer-a> | 3040 |
 | nuxt-supabase-starter | 3020 |
-| nuxt-edge-agentic-rag | 3010 |
-| yuntech-usr-sroi | 3060 |
-| TDMS | 3000 |
-| rental-scout | 3050 |
-| co-purchase | 3070 |
-| yudefine-blog | 3080 |
-| CPMS | 3090 |
-| cnc-link-dashboard | 3100 |
+| <consumer-c> | 3010 |
+| <consumer-d> | 3060 |
+| <consumer-b> | 3000 |
+| <consumer-h> | 3050 |
+| <consumer-e> | 3070 |
+| <consumer-i> | 3080 |
+| <consumer-a> | 3090 |
+| <consumer-c> | 3100 |
 | clade | — (source-of-truth，非 Nuxt consumer) |
 
 下一個可用：**3110**（快照，以 registry/consumers.json dev_ports 為準）。
 
 ## Anti-pattern
 
-- ❌ 裸 `nuxt dev`（吃 default 3000，必跟 TDMS 撞）
+- ❌ 裸 `nuxt dev`（吃 default 3000，必跟 <consumer-b> 撞）
 - ❌ 在 `.env.local` 設 `PORT=3050` 但 dev script 沒帶 `--port` flag — Nuxt 不一定吃 `PORT` env（要 `NITRO_PORT`），且 `.env.local` 是 gitignored，協作者 clone 完不知道
 - ❌ 改 consumer 端 port 沒先改 clade registry — 下次 audit 報 DRIFT，且新 consumer 加入時可能撞號
 

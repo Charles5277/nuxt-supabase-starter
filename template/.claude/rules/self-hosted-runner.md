@@ -18,7 +18,7 @@ Local edits will be reverted by the next sync.
 
 ## 為什麼這條規約存在
 
-2026-07-28 TDMS 實證：deploy job 寫 `runs-on: [self-hosted, linux, ci-build]`，而 `ci-build` 這個標籤同時掛在兩台 runner 上：
+2026-07-28 <consumer-b> 實證：deploy job 寫 `runs-on: [self-hosted, linux, ci-build]`，而 `ci-build` 這個標籤同時掛在兩台 runner 上：
 
 ```
 gh-runner-tdms  labels=self-hosted,Linux,X64,ci-build,gh-runner-lxc   ← 有 rsync、有部署金鑰
@@ -87,7 +87,7 @@ if ! ls -1t | tail -n +6 | xargs -r rm -rf; then
 fi
 ```
 
-2026-07-28 TDMS 實證：舊 release 目錄屬於早期部署機制的 service user，`deploy` user 刪不掉 → 清理 exit 123 → **檔案已 rsync 就位、symlink 已切換，但重啟 step 被 skip**，production 跑著舊 process 而 CI 顯示紅燈。這種「部署了一半」比乾脆失敗更難察覺。
+2026-07-28 <consumer-b> 實證：舊 release 目錄屬於早期部署機制的 service user，`deploy` user 刪不掉 → 清理 exit 123 → **檔案已 rsync 就位、symlink 已切換，但重啟 step 被 skip**，production 跑著舊 process 而 CI 顯示紅燈。這種「部署了一半」比乾脆失敗更難察覺。
 
 - **MUST** 部署步驟的順序是「先讓新版本生效，再做清理」，或讓清理獨立成不影響結果的 step
 - **MUST** 部署產物目錄的 ownership 一致（都屬部署 user）；換部署機制時 **MUST** 一併處理既有目錄的 ownership
@@ -96,7 +96,7 @@ fi
 
 Persistent runner（LXC / VM，跨 job 保留檔案系統）與 GitHub-hosted runner（每次全新容器）對「會自我更新的 action」反應不同：GitHub-hosted 上自我更新的副作用隨容器一起消失，persistent runner 上會留下來污染下一個 job。
 
-- **MUST** `pnpm/action-setup` 在 self-hosted runner 釘 **v5**。v6 會自我更新 pnpm，在 persistent runner 上把既有安裝改壞。實證：rental-scout `5213e8f` 與 co-purchase 同日各自從 v6 回退 v5
+- **MUST** `pnpm/action-setup` 在 self-hosted runner 釘 **v5**。v6 會自我更新 pnpm，在 persistent runner 上把既有安裝改壞。實證：<consumer-h> `5213e8f` 與 <consumer-e> 同日各自從 v6 回退 v5
 - **MUST** 升任何「會在 runner 上安裝/更新工具」的 action 大版之前，先問「這個 action 有沒有自我更新行為？persistent runner 上它留下什麼？」——GitHub-hosted 綠燈**不是** self-hosted 也會綠的證據
 - 範本與完整 CI workflow 見 `vendor/snippets/cloudflare-workers/self-hosted-runner-ci.workflow.yml.template`
 
@@ -151,7 +151,7 @@ gh api repos/<owner>/<repo>/actions/runs/<run-id>/jobs \
 - **NEVER** 用 `actions/cache` 存瀏覽器 binary：self-hosted 的 cache 走網路往返，比本機命中慢；persistent runner 上它要保護的東西本來就沒丟
 - **NEVER** 為了「乾淨」在 job 裡清 `~/.cache/ms-playwright`——那是共享可變狀態，per § 7
 
-Fleet 實測（2026-07-31 快照，重量方式見上方指令）：perno 2s、TDMS 8s（含 `--with-deps`）、yuntech-usr-sroi 1s，三者皆 persistent runner 且**未**做任何快取設定；同期 GitHub-hosted 的 nuxt-edge-agentic-rag 為 20s。
+Fleet 實測（2026-07-31 快照，重量方式見上方指令）：<consumer-a> 2s、<consumer-b> 8s（含 `--with-deps`）、<consumer-d> 1s，三者皆 persistent runner 且**未**做任何快取設定；同期 GitHub-hosted 的 <consumer-c> 為 20s。
 
 本證據決定：persistent self-hosted runner 上要不要替下載型工具加一層快取機制——不要加。
 本證據不決定：GitHub-hosted runner 上要不要優化——**NEVER** 拿這組數字論證 `ubuntu-latest` 的 job 也不必量、不必改。

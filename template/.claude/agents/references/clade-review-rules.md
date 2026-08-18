@@ -55,7 +55,7 @@ Reviewer **額外**需人工判斷：
 
 > enforcement: audit(audit-pinia-mutation-loading.ts)（單檔偵測器另見 `vendor/scripts/checks/mutation-loading-detect.ts`；無對應 patterns.json semantic id）
 
-`@pinia/colada` 的 `useMutation()` 回傳的 `status`（`'pending' | 'success' | 'error'`）是 **data-state**，mount 當下就是 `'pending'`（還沒呼叫過、沒 data），**與有沒有執行無關**。拿它當 loading → 按鈕 / spinner 一進頁面就永久 loading，且 typecheck 全綠（`status` 是合法欄位、`'pending'` 是合法值）、不發任何 request、查 log 也查不到。實證：perno 30+ 處、TDMS 3 處（含**跨行 destructuring** 寫法，舊單行 grep heuristic 會漏抓）。
+`@pinia/colada` 的 `useMutation()` 回傳的 `status`（`'pending' | 'success' | 'error'`）是 **data-state**，mount 當下就是 `'pending'`（還沒呼叫過、沒 data），**與有沒有執行無關**。拿它當 loading → 按鈕 / spinner 一進頁面就永久 loading，且 typecheck 全綠（`status` 是合法欄位、`'pending'` 是合法值）、不發任何 request、查 log 也查不到。實證：<consumer-a> 30+ 處、<consumer-b> 3 處（含**跨行 destructuring** 寫法，舊單行 grep heuristic 會漏抓）。
 
 Reviewer **MUST** 檢查 diff 內 Pinia Colada loading 推導：
 

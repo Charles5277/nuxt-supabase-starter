@@ -220,7 +220,7 @@ main 髒 / 有別 session WIP 不能直接跑 `/commit`（會吃別人 staged）
 
 **核心命題**：把 stash 的處置權完全綁在 user 身上，前提是 user 會去看。**那個前提對不會人工看 stash 的
 user 不成立**，結果是 stash 單調遞增、owner 資訊隨時間流失，最後沒有任何人有能力判斷能不能刪
-（perno 2026-08-02 實證：一個 session 內 6 → 10 條，全由自動化流程建立，10 條裡 9 條無 sidecar metadata）。
+（<consumer-a> 2026-08-02 實證：一個 session 內 6 → 10 條，全由自動化流程建立，10 條裡 9 條無 sidecar metadata）。
 
 因此 `git stash drop` **不是**絕對禁令，而是**綁機械判準的條件動作**。
 
@@ -235,7 +235,7 @@ user 不成立**，結果是 stash 單調遞增、owner 資訊隨時間流失，
    `docs/archives/stash-dropped.md`（append-only），**寫完才 drop**
 
    ⚠️ **副檔名 MUST 是 `.md` 不是 `.log`** —— 多數 consumer 的 `.gitignore` 有 `*.log`，寫成 `.log`
-   的留痕永遠進不了 git，換機器或重新 clone 就消失，等於沒留（2026-08-02 perno 實證）。
+   的留痕永遠進不了 git，換機器或重新 clone 就消失，等於沒留（2026-08-02 <consumer-a> 實證）。
 
 ### 否決判準（任一命中即 NEVER drop）
 

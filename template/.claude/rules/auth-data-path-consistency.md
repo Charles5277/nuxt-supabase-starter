@@ -16,7 +16,7 @@ Local edits will be reverted by the next sync.
 
 瀏覽器的 Supabase client（`useSupabaseClient()`）向 PostgREST 發 request 時，身分來自 **Supabase Auth 的 JWT**，不來自應用程式自己的 Cookie Session。若應用程式已移除或未使用 Supabase Auth（改用 `nuxt-auth-utils`、Better Auth 等），瀏覽器的 Supabase client **永遠以 `anon` role 存取**，無論使用者是否已登入。
 
-此規則防止「session 層已換、但 client 端仍直連 PostgREST」的混合狀態——TDMS 2026-07-14 production 401 事故的根因。
+此規則防止「session 層已換、但 client 端仍直連 PostgREST」的混合狀態——<consumer-b> 2026-07-14 production 401 事故的根因。
 
 ## Trigger
 
@@ -62,7 +62,7 @@ RLS policy 裡的 `auth.uid()` 能取到值，前提是**該 request 攜帶 Supa
 
 1. **NEVER** 用 `set_app_context` 這類 RPC 寫 GUC 供 policy 讀。`set_config(..., true)` 是 **transaction-local**，而 PostgREST 每個 request 是獨立 transaction——GUC 在 RPC 回傳的當下就失效，policy 裡的 `current_setting('app.*')` 永遠讀不到它。這不是「大部分情況能用」，是**恆定無效**。
 
-   三次獨立實證：TDMS（Sentry TDMS-6，已修，`server/utils/supabase.ts` 留有逐字註解）、nuxt-supabase-starter（2026-08-04，已修）、perno（`supabase/migrations/20260318023108_*.sql` 的 `app.current_tenant_id`，**現況仍在**）。
+   三次獨立實證：<consumer-b>（Sentry <consumer-b>-6，已修，`server/utils/supabase.ts` 留有逐字註解）、nuxt-supabase-starter（2026-08-04，已修）、<consumer-a>（`supabase/migrations/20260318023108_*.sql` 的 `app.current_tenant_id`，**現況仍在**）。
 
 2. **NEVER** 把「policy 存在」當成「授權存在」。判斷授權是否生效要同時回答三件事：identity 來源是不是 Supabase Auth、連線角色是不是 service_role、policy 依賴的是 `auth.uid()` 還是 GUC。三者任一錯位，policy 就是死碼。
 

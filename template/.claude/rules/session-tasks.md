@@ -86,7 +86,7 @@ new session`）。
 | 正在跑不可分割的驗證迴圈（單一 test run / 單一 migration） | 跑完再切。**NEVER** 拿「等一下還有事要做」把它延伸成新工作段 |
 | **本輪是 work-loop runner child**（`WORK_LOOP_RUNNER_CHILD=1`，由 `runner.sh` 設） | 上面兩級改讀 **500k / 600k**，語義完全不變（500k = 不要再開大工作段、600k = 現在收工）。Charles 2026-08-12 拍板，TD-375 |
 
-**runner child 的兩級為什麼不同。** 上表兩級的立論是「context 越滾越大、成本 ∝ C²」，而 runner child 每輪是 `claude --print` 起的**全新 process**、跨輪不累積——起始載入量是它的**固定成本**，不是累積量。TDMS 五輪實測起始落在 300k–307k，也就是第一級在它**還沒做任何事之前**就響，於是每輪只能做小 item（r52/r53/r54 三輪皆零 dispatch）。**NEVER 把 500k / 600k 套到 in-session `/loop`**——那條路徑的 context 真的跨輪累積，前提成立。判別只認 `runner.sh` 設的那個 env，**NEVER** 從「感覺像無人值守」推斷。
+**runner child 的兩級為什麼不同。** 上表兩級的立論是「context 越滾越大、成本 ∝ C²」，而 runner child 每輪是 `claude --print` 起的**全新 process**、跨輪不累積——起始載入量是它的**固定成本**，不是累積量。<consumer-b> 五輪實測起始落在 300k–307k，也就是第一級在它**還沒做任何事之前**就響，於是每輪只能做小 item（r52/r53/r54 三輪皆零 dispatch）。**NEVER 把 500k / 600k 套到 in-session `/loop`**——那條路徑的 context 真的跨輪累積，前提成立。判別只認 `runner.sh` 設的那個 env，**NEVER** 從「感覺像無人值守」推斷。
 
 **NEVER 把 300k 那級讀成「什麼都不能開」。** 本節 round 24 版的第一級是 200k 且綁「**NEVER** 開新的工作段」，而 `/work-loop` 這類 loop 的本質就是一個接一個開新 item——那條對它等於硬停。2026-08-06 round 26 / 27 連續兩輪實證：兩輪都在 ~202k 被腰斬，而當下一輪的工作剛做完、正要開下一輪。**改的不是數字算錯，是那一級的語義訂錯了**；把 300k 讀回「什麼都不能開」等於把這次拍板退回它要修的狀態。
 
@@ -286,9 +286,9 @@ session boundary 或跨 repo 決策已判定確實需要另一個互動 session�
 
 **命名對了不代表放對地方——落點是另一條獨立契約。** dispatch 出去的 pane **MUST** 落在**目標 cwd 所屬的 workspace**，不是呼叫者當下所在的 workspace。預設 `mode: "split"` 分割的是**呼叫者的 pane**，與目標 cwd 無關；helper 自 2026-08-13 起在 split 前比對，目標 cwd 明確屬於別的 workspace 時自動退回 Tab／workspace topology（該路徑本來就 canonicalize cwd）。
 
-**判 receipt 時 MUST 讀 `pane_id` 的 workspace 前綴**（`wE:pG` 的 workspace 是 `wE`），**NEVER** 只看 label 就認定放對了——2026-08-13 實測：一個 perno session dispatch 出去的 clade publish，label 是完全正確的 `[wE:pG] 發布 Herdr root fix`，pane 卻落在 **Perno** workspace。兩個方向同時出錯：clade 操作者在 clade workspace 遍尋不著，而它混在 perno 的 tab 裡又被誤讀成 perno 的工作。**label 對這件事零訊號。**
+**判 receipt 時 MUST 讀 `pane_id` 的 workspace 前綴**（`wE:pG` 的 workspace 是 `wE`），**NEVER** 只看 label 就認定放對了——2026-08-13 實測：一個 <consumer-a> session dispatch 出去的 clade publish，label 是完全正確的 `[wE:pG] 發布 Herdr root fix`，pane 卻落在 **Perno** workspace。兩個方向同時出錯：clade 操作者在 clade workspace 遍尋不著，而它混在 <consumer-a> 的 tab 裡又被誤讀成 <consumer-a> 的工作。**label 對這件事零訊號。**
 
-Canonical clade publish **MUST** 走 `node /home/charles/offline/clade/vendor/scripts/herdr-clade-publish.ts`（無參數）。
+Canonical clade publish **MUST** 走 `node <clade-central-repo>/vendor/scripts/herdr-clade-publish.ts`（無參數）。
 **NEVER** 用 caller-controlled generic `--cwd`／`--prompt` 或 raw `herdr agent prompt` 替代；只搬 intent，Step 1–9屬 `clade-publish` skill。
 
 | 結果 | 主線動作 |

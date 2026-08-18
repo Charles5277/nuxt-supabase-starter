@@ -61,7 +61,7 @@ Local edits will be reverted by the next sync.
 - **archive 收尾 MUST**：(a) 確保 ticket 已是 `進行中`（若還停在 `未開始`/`需確認` 先補轉）；(b) 在 Step 8 summary **明文列出 pending 動作**：「📌 Notion ticket `<page_id>`：本 change 已 archive，待 `/commit` 發版產 git tag 後 → 轉 `驗收中` + 填 `修復版本 >= <tag>`」。
 - **發版完成後 MUST**：同一主線跑完 `/commit`（tag 已存在、push 已觸發 deploy）後，**立即** `git describe --tags --abbrev=0` 抓 tag，執行 `進行中 → 驗收中` + 寫 `修復版本 >= <tag>`。**NEVER** 把這步丟給「下次想起來」。
 
-> consumer 若有 deploy 後 CI 綠燈確認流程（如 TDMS Post-Push CI Watcher），`驗收中` 轉移 SHOULD 等 CI 綠燈（deploy 真的成功）再推，避免 tag 出去但 deploy 紅燈卻已標驗收中。
+> consumer 若有 deploy 後 CI 綠燈確認流程（如 <consumer-b> Post-Push CI Watcher），`驗收中` 轉移 SHOULD 等 CI 綠燈（deploy 真的成功）再推，避免 tag 出去但 deploy 紅燈卻已標驗收中。
 
 ---
 
@@ -87,7 +87,7 @@ consumer 在自家 `.claude/consumer-meta.json` 加（schema 見 `registry/consu
 ```
 
 - consumer-self 決策（per [[consumer-meta]] § Adoption），**NEVER** 由 clade 主線替 consumer 填。
-- `boardDatabaseId` / `dataSourceId` / `referenceSkill` 是 per-consumer 事實（不同 consumer 不同 board）——本規則靠它參數化，不寫死 TDMS 座標。
+- `boardDatabaseId` / `dataSourceId` / `referenceSkill` 是 per-consumer 事實（不同 consumer 不同 board）——本規則靠它參數化，不寫死 <consumer-b> 座標。
 - 未採用的 consumer：`notion` block 缺 / `ticketWorkflow:false` → 本規則 silent no-op。
 
 ---

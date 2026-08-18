@@ -43,17 +43,17 @@ Reference：
 | cf-workers | Supabase | baseline | — | T1 | `evlog-baseline` |
 | cf-workers | Supabase | hardening | — | T2 | （無；新 consumer 從 baseline 走） |
 | cf-workers | Supabase | D-pattern audit | — | T2 + O1 | `evlog-d-pattern-audit` |
-| cf-workers | Supabase（multi-package） | hardening 或 D-pattern | — | T2 + T4（+O1 視需要） | （無；perno-specific） |
+| cf-workers | Supabase（multi-package） | hardening 或 D-pattern | — | T2 + T4（+O1 視需要） | （無；<consumer-a>-specific） |
 | cf-workers | NuxtHub D1 | partial | ✅ | T3 | `evlog-nuxthub-ai` |
 
 對應探測當時的 5 consumer（歷史快照；新 consumer 依 registry 補列）：
 
 | Consumer | apply 順序 | 預估工時 |
 | --- | --- | --- |
-| yuntech-usr-sroi | T1 | 0.5 天 |
-| TDMS | T2（O1 可選） | 0.5 天 |
-| perno | T2 + T4 + O1 | 1-2 天 |
-| nuxt-edge-agentic-rag | T3 | 1 天 |
+| <consumer-d> | T1 | 0.5 天 |
+| <consumer-b> | T2（O1 可選） | 0.5 天 |
+| <consumer-a> | T2 + T4 + O1 | 1-2 天 |
+| <consumer-c> | T3 | 1 天 |
 | starter（自身 template） | T2（pre-applied） | 1-2 天（M3b） |
 
 ## 5 個 spectra change template overview
@@ -62,7 +62,7 @@ Reference：
 
 ### T1 — `evlog-adopt-cfworkers-supabase-baseline`
 
-depth 1 → 5。target：yuntech-usr-sroi。內含：
+depth 1 → 5。target：<consumer-d>。內含：
 - **queryable durable drain + drain pipeline**（Supabase 系 = Postgres drain；見 § Drain 選擇指引）
 - 5 件套 enricher（UA / RequestSize / Geo / TraceContext / tenant）
 - sampling + redaction policy
@@ -72,7 +72,7 @@ depth 1 → 5。target：yuntech-usr-sroi。內含：
 
 ### T2 — `evlog-adopt-cfworkers-supabase-hardening`
 
-depth 5 → 6+。targets：starter（template 自身）、TDMS、perno（不含 multi-package overlay）。內含：
+depth 5 → 6+。targets：starter（template 自身）、<consumer-b>、<consumer-a>（不含 multi-package overlay）。內含：
 - typed fields schema（5 個跨 endpoint 共用核心欄位）
 - source location enricher（vite plugin）
 - **client transport**
@@ -80,7 +80,7 @@ depth 5 → 6+。targets：starter（template 自身）、TDMS、perno（不含 
 
 ### T3 — `evlog-adopt-cfworkers-nuxthub-ai`
 
-NuxtHub D1 完整版。target：nuxt-edge-agentic-rag。內含：
+NuxtHub D1 完整版。target：<consumer-c>。內含：
 - `@evlog/nuxthub` drain
 - Workers AI enricher
 - `createAILogger`：cost / token / tool / embed / moderation 子事件
@@ -89,16 +89,16 @@ NuxtHub D1 完整版。target：nuxt-edge-agentic-rag。內含：
 
 ### T4 — `evlog-adopt-multi-package-paths`
 
-path layout overlay（不是 evlog feature）。targets：perno（必）、starter scaffolder（選）。內含：
+path layout overlay（不是 evlog feature）。targets：<consumer-a>（必）、starter scaffolder（選）。內含：
 - `packages/*/server/**` 偵測
-- per-client env split（`.env.bigbyte` / `.env.shared`）
+- per-client env split（`.env.<client-a>` / `.env.shared`）
 - scaffolder template hooks
 
 可疊加 T2。
 
 ### O1 — `evlog-overlay-d-pattern-audit-signed`
 
-evlog audit overlay（疊在 D-pattern 之上）。target：perno。內含：
+evlog audit overlay（疊在 D-pattern 之上）。target：<consumer-a>。內含：
 - evlog `signed()` hash chain（與 DB hash chain **不**共用 secret）
 - `auditEnricher()` 把 DB row 的 `auditEventId` / `prev_hash` / `hash` 帶進 evlog event
 - `auditOnly()` drain pipeline 分支
@@ -119,7 +119,7 @@ starter scaffolder（M3b 後支援 `--evlog-preset <name>` flag）：
 不獨立 preset 的：
 
 - T2 hardening：新 consumer 從 T1 直接開始就是 hardening 後狀態
-- T4 multi-package：multi-package 是 perno-specific 演進路徑，新 consumer 預設 single-package
+- T4 multi-package：multi-package 是 <consumer-a>-specific 演進路徑，新 consumer 預設 single-package
 
 ## Adoption depth 1-6 自評表
 
@@ -127,13 +127,13 @@ starter scaffolder（M3b 後支援 `--evlog-preset <name>` flag）：
 
 | Depth | 條件 | 對應 |
 | --- | --- | --- |
-| **1** | `evlog/nuxt` 套件裝、`useLogger(event)` 在 server endpoint 採用 | yuntech-usr-sroi 現況 |
+| **1** | `evlog/nuxt` 套件裝、`useLogger(event)` 在 server endpoint 採用 | <consumer-d> 現況 |
 | **2** | 1 + 自家 Sentry drain（無 pipeline） | — |
 | **3** | 2 + drain pipeline（batch + retry） | — |
 | **4** | 3 + 5 件套 enricher | — |
-| **5** | 4 + sampling + redaction policy + structured errors | starter / TDMS / perno 現況 |
+| **5** | 4 + sampling + redaction policy + structured errors | starter / <consumer-b> / <consumer-a> 現況 |
 | **6** | 5 + client transport + typed fields + source location | T2 完成後 |
-| **6+O1** | 6 + D-pattern audit + evlog signed chain + auditDiff | perno T2+O1 完成後 |
+| **6+O1** | 6 + D-pattern audit + evlog signed chain + auditDiff | <consumer-a> T2+O1 完成後 |
 | **AI variant** | 1 + AI SDK + MCP/SSE child logger（與 6 並行軸） | agentic-rag 現況；T3 拉到 NuxtHub D1 完整版 |
 
 review 時 grep 出對應 marker：
@@ -196,7 +196,7 @@ Depth 表量**裝了什麼**，`evlog map` 量**每個 entry point 用了沒有*
 | **catalog 不受內容檢查** | 建一個**沒有** why/fix 的 `defineErrorCatalog` → 該 entry point **100/100**，CLI 還印「✓ errors carry why and fix」 | `structured-errors` 只檢查直接 `createError()` 的 object keys；`throw someErrors.X()` 被歸為 `other` 不檢查。**全面 catalog 化是最有效的洗分手段** |
 | **分數會四捨五入** | 201 個 route（200 滿分 + 1 個 80 分）→ CLI 回報 **score 100** | 分數是 `Math.round(加權平均)`。大 repo 裡新增失敗完全反映不到整數分上 |
 | **suppression 不扣分** | 把 check 全部 `disable` 掉 → **score 100** / suppressed 2 | disabled check 轉成 `n/a`，從分母移除 |
-| **check 不驗欄位有沒有到達 runtime**（實測 2026-08-03，TDMS） | 1259 個 `createError({ …, why, fix })` 全部滿分，但呼叫點解析到的是 **h3 的 `createError`**，它根本不讀這兩個欄位 → 欄位寫了就被丟掉 | `structured-errors` 是 AST 原始碼比對，不解析 callee 實際 resolve 到誰。**route 級零失敗也擋不住這一種**——它連 runtime 都沒碰到 |
+| **check 不驗欄位有沒有到達 runtime**（實測 2026-08-03，<consumer-b>） | 1259 個 `createError({ …, why, fix })` 全部滿分，但呼叫點解析到的是 **h3 的 `createError`**，它根本不讀這兩個欄位 → 欄位寫了就被丟掉 | `structured-errors` 是 AST 原始碼比對，不解析 callee 實際 resolve 到誰。**route 級零失敗也擋不住這一種**——它連 runtime 都沒碰到 |
 
 因此 gate 的判定 **MUST** 用 **route 級零失敗 + 零 suppression**，**NEVER** 用全域分數當 boolean（`vendor/actions/evlog-map-gate/gate.mjs` 的 `strict` 模式已如此實作）。分數只能當 dashboard。
 
@@ -261,7 +261,7 @@ rg -n "evlog-map-disable-next-line" server app | rg -v "—|--"
 
 ### MUST NOT
 
-- **MUST NOT** 在 catalog prefix 加 consumer namespace（**禁止** `tdms.auth.X` / `perno.billing.X`）— 破壞 cross-consumer 聚合語意
+- **MUST NOT** 在 catalog prefix 加 consumer namespace（**禁止** `tdms.auth.X` / `<consumer-a>.billing.X`）— 破壞 cross-consumer 聚合語意
 - **MUST NOT** 在測試檔 hard-code error code 字串（用 `errors.X.code` 或 `catalog.X.code`，否則 catalog 改名測試漏網）
 - **MUST NOT** 在 `declare module 'evlog'` 寫進 `*.test.ts` / `*.spec.ts`（測試檔的 augmentation 不會散播到 production type space，反而誤導 IDE）
 - **MUST NOT** 在 enricher 內 `throw billingErrors.X()`（enricher 失敗會破整個 wide event；catalog error 限 endpoint handler 層）
@@ -296,7 +296,7 @@ rg -n "declare module ['\"]evlog['\"]" server/utils packages/**/server/utils | w
 rg -n "throw createError\\(" server/api packages/**/server/api | wc -l
 
 # Catalog prefix consumer-namespace 違反（block）
-rg -n "defineErrorCatalog\\(['\"](?:tdms|perno|sroi|rag|starter)\\." server packages/**/server
+rg -n "defineErrorCatalog\\(['\"](?:tdms|<consumer-a>|sroi|rag|starter)\\." server packages/**/server
 
 # Catalog 測試 hard-code 字串（block）
 rg -nE "code:\\s*['\"][a-z][a-z0-9._]*\\.[A-Z_]+['\"]" "**/*.test.ts" "**/*.spec.ts"
@@ -346,7 +346,7 @@ evlog 用於 production 的 consumer **MUST** 配一個 queryable durable drain 
 2. 加 source location vite plugin + sourceMaps upload
 3. 加 client transport（若 T1 沒含）
 
-### 從 depth 6 → 6+O1（perno）
+### 從 depth 6 → 6+O1（<consumer-a>）
 
 1. 加 `auditEnricher()`（從 D-pattern audit_logs row 帶欄位）
 2. 加 `signed()` chain（與 DB hash secret **不**共用）

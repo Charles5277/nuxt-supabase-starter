@@ -152,7 +152,7 @@ Scoped sub-item 格式必須剛好縮排兩個空白，並使用 `#N.M`：
 
 判別方法：item 描述含「找到 / 定位 / 搜尋 / locate / find / search」+ business-key 識別符（`EMP-\d+` / `contract-[a-z\-]+\d+` / 8-4-4-4-12 UUID），**且**該 key 不會 natively 顯示在 target URL 載入後的 viewport 內，則 agent 無法 truthfully bridge `sample-key → UI row` 對應。
 
-**實證**：2026-05-24 perno `app-status-badge-extraction`：
+**實證**：2026-05-24 <consumer-a> `app-status-badge-extraction`：
 
 - task 寫「找到周怡君 `EMP-009` 補打下班卡」
 - target `/admin/attendance/amendments` 員工 column 因 API 400 fallback 全顯示「-」
@@ -226,7 +226,7 @@ Scoped sub-item 格式必須剛好縮排兩個空白，並使用 `#N.M`：
 - **改引用可編輯狀態的 sample**（同 fixture 集合內挑一筆 draft / pending / 進行中的單），保持原 channel；或
 - 若該動作**本質需真人親自操作**（白名單情境）→ 改 `[review:ui]`。
 
-**實證**（TD-176，TDMS `tool-usage-count-cost-formula` #3.1）：
+**實證**（TD-176，<consumer-b> `tool-usage-count-cost-formula` #3.1）：
 
 ```markdown
 ❌ - [ ] #3.1 [verify:ui] /purchase 編輯 PO `991510` 的數量 → 存 → 顯示更新後數量

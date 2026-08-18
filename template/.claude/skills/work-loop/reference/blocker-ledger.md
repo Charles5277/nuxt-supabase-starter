@@ -12,7 +12,7 @@ Local edits will be reverted by the next sync.
 
 ## 這份 ledger 在防什麼
 
-runner 每輪是全新 process，**上一輪診斷過什麼完全不在 context 裡**。所以同一批卡住的 item 每輪被重新撿起、重新讀 tasks.md／HANDOFF、重新推導出同一個「還是卡住」的結論。2026-08-12 量測：TDMS 31 個 substantive round 裡有 27 輪提到 blocker，而那批 blocker 的解除條件整段期間沒有變過。
+runner 每輪是全新 process，**上一輪診斷過什麼完全不在 context 裡**。所以同一批卡住的 item 每輪被重新撿起、重新讀 tasks.md／HANDOFF、重新推導出同一個「還是卡住」的結論。2026-08-12 量測：<consumer-b> 31 個 substantive round 裡有 27 輪提到 blocker，而那批 blocker 的解除條件整段期間沒有變過。
 
 [blocker-evaluation.md](blocker-evaluation.md) 管的是**怎麼判**一個 blocker 還算不算數；本檔管的是**這輪要不要重判**。兩者不互相取代：查表命中就跳過重判，沒命中就照那份逐條判。
 

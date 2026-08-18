@@ -52,7 +52,7 @@ Local edits will be reverted by the next sync.
 | 環境專屬 feature flag、seed / fixture 開關 | staging 拿到 production 的行為 |
 | destructive admin endpoint 的 guard | 最嚴重：staging 的防護等級掉到 production 的假設上 |
 
-**MUST** 在改動任一消費者時把**同一個 repo 內的其他消費者一起看過**。這條的實證是：perno 的 `nuxt.config.ts` 早就在 destructive endpoint 的 guard 上做對了（註解逐字寫著「staging / production 共用 production build，`PROD` 無法區分」），而同一個檔案裡的 evlog `environment` 與另外兩處 Sentry init 仍在讀 `NODE_ENV`——知識在同一個檔案裡卻沒有轉移過去。
+**MUST** 在改動任一消費者時把**同一個 repo 內的其他消費者一起看過**。這條的實證是：<consumer-a> 的 `nuxt.config.ts` 早就在 destructive endpoint 的 guard 上做對了（註解逐字寫著「staging / production 共用 production build，`PROD` 無法區分」），而同一個檔案裡的 evlog `environment` 與另外兩處 Sentry init 仍在讀 `NODE_ENV`——知識在同一個檔案裡卻沒有轉移過去。
 
 ## 接線：三個位置各自的正確來源
 
@@ -83,7 +83,7 @@ gate 的 exit code 與輸出走 [[checker-contract]]。可直接抄的實作（�
 
 ## 成本邊界
 
-一次接線的成本是 6 個檔（server init / client init / build-time define / Dockerfile / 兩支 deploy workflow）加一支 gate 腳本。它換掉的是「所有 staging 錯誤都算在 production 頭上、而且沒有任何訊號」——perno 2026-08-06 的實際發現路徑是 E2E 的 audit 事件觸發了 production 的 Discord 告警，在那之前 Sentry 自上線起的資料都混著。
+一次接線的成本是 6 個檔（server init / client init / build-time define / Dockerfile / 兩支 deploy workflow）加一支 gate 腳本。它換掉的是「所有 staging 錯誤都算在 production 頭上、而且沒有任何訊號」——<consumer-a> 2026-08-06 的實際發現路徑是 E2E 的 audit 事件觸發了 production 的 Discord 告警，在那之前 Sentry 自上線起的資料都混著。
 
 本證據決定：這條要不要配機械 gate（要）。
 本證據不決定：單一部署目標的 repo 要不要現在就接線——那由 § 適用條件 判，**NEVER** 拿本節論證對只有一個環境的 repo 也強制接線。

@@ -23,7 +23,7 @@ Local edits will be reverted by the next sync.
   "session_id": "...",
   "agent": "claude-code|codex",
   "started_at": "<iso>",
-  "consumer": "TDMS",
+  "consumer": "<consumer-b>",
   "worktree_path": "/Users/.../<consumer>-wt/<slug>",
   "branch": "session/<date>-<slug>",
   "change_id": "<slug>",

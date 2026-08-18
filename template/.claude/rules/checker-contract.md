@@ -168,7 +168,7 @@ Checker 的每一條判準 **MUST** 綁在**可觀察的行為事實**上。命�
 | 這筆記錄是否已存在 | 標題字串比對 | 業務唯一鍵的組合 |
 | 這個 phase 是不是 UI 層 | 標題含 `view` | 該格式自帶的顯式標記（`（非 view）` / `（view-only phase）`） |
 
-前兩列都是實證：`audit-consumer-meta-adoption.ts` 曾用檔名判準誤報「TDMS 沒有部署流程」——它的 deploy job 住在 `ci.yml` 裡（`name: CI / Deploy` + `jobs.deploy` 做 rsync + SSH）；`notion-sync.ts` 曾用「非 main」選 worktree，選到鄰居 change 的 worktree，因為**每個 worktree 都帶著 fork 當下的全部 change 目錄**。第四列是「`（非 view）`含 view」的反向誤判。
+前兩列都是實證：`audit-consumer-meta-adoption.ts` 曾用檔名判準誤報「<consumer-b> 沒有部署流程」——它的 deploy job 住在 `ci.yml` 裡（`name: CI / Deploy` + `jobs.deploy` 做 rsync + SSH）；`notion-sync.ts` 曾用「非 main」選 worktree，選到鄰居 change 的 worktree，因為**每個 worktree 都帶著 fork 當下的全部 change 目錄**。第四列是「`（非 view）`含 view」的反向誤判。
 
 ### 慣例判準的失敗形狀
 
@@ -255,8 +255,8 @@ node vendor/review-rules/scan.mjs --all --layer all --write-baseline
 
 ## 為什麼
 
-- TDMS 的 `check-error-leaks` 曾只掃 `server/api`；實際 handler 位於其他 server API roots，checker 綠燈沒有涵蓋那些路徑。這證明 scope 必須由輸出可見且由 invocation 明確傳入。
+- <consumer-b> 的 `check-error-leaks` 曾只掃 `server/api`；實際 handler 位於其他 server API roots，checker 綠燈沒有涵蓋那些路徑。這證明 scope 必須由輸出可見且由 invocation 明確傳入。
 - Contract 檢查曾在 vendor dependency 缺失時 silent skip；輸出看起來沒有 finding，但 contract 並未執行。這證明依賴缺失必須是 infrastructure error。
-- perno CI 曾手拆步驟，漏跑 `package.json` canonical `check` 內已宣告的 `audit:enforce`。這證明 CI 必須呼叫 canonical entry，不能維護第二份 checker 清單。
+- <consumer-a> CI 曾手拆步驟，漏跑 `package.json` canonical `check` 內已宣告的 `audit:enforce`。這證明 CI 必須呼叫 canonical entry，不能維護第二份 checker 清單。
 
 這三項都是 checker claim 與實際 coverage 不一致；本規約用可觀察 scope、fail-closed 狀態、單一 canonical entry 與 allowlist ratchet 讓 claim 可驗證。

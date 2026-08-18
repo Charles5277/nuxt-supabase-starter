@@ -18,7 +18,7 @@
 #
 # 起跑前先跑 preflight（§ Preflight）與待辦源健康門檻（§ 待辦源健康門檻）：兩者任一不過就
 # **完全不啟動**，理由落在 $LOG_DIR/preflight.log。它們省的不是第 4 輪起的重複失敗，是全部
-# 那幾十輪 —— 2026-08-10 TDMS 因 headless 權限閘門連續拒絕，空轉 99 輪、零待辦被修改。
+# 那幾十輪 —— 2026-08-10 <consumer-b> 因 headless 權限閘門連續拒絕，空轉 99 輪、零待辦被修改。
 #
 # 停止：state 檔出現 stoppedReason，或達 --max-rounds，或連續 2 輪 exit≠0，
 #       或 state 連續 2 輪未前進。
@@ -86,7 +86,7 @@ SKIP_PREFLIGHT=0
 # 3 是下限側的保守值 —— 低於它時一輪的固定成本（冷載 + scan + 分類）多半換不到一個 item。
 MIN_READY=3
 # `ScheduleWakeup` / `Monitor` 的 interval 下限（秒）。CLAUDE.md 已有長等待規約，但 2026-08-12
-# 量測到 197 次呼叫（TDMS 2.10 次/輪）證明無人值守下遵守不穩，所以在 runner 層把數字下沉進
+# 量測到 197 次呼叫（<consumer-b> 2.10 次/輪）證明無人值守下遵守不穩，所以在 runner 層把數字下沉進
 # 每輪的 prompt —— 它出現在 user turn，比冷載一次的規約大聲。
 MIN_WAKEUP=1200
 # acceptEdits 是刻意的預設：runner 要能無人值守跑，但 bypassPermissions 會連
@@ -281,7 +281,7 @@ print_runner_summary() {
 # 起跑前把「這個 runner 跑得起來嗎」問完。不過就 exit≠0 且**一輪都不跑**。
 #
 # 為什麼是前置探針而不是斷路器：斷路器要先燒掉 N 輪才會跳，而失敗模式是**起跑當下就已經
-# 確定**的（權限閘門不會在第 4 輪改變主意）。2026-08-10 TDMS 空轉 99 輪的成本，前置探針能
+# 確定**的（權限閘門不會在第 4 輪改變主意）。2026-08-10 <consumer-b> 空轉 99 輪的成本，前置探針能
 # 全額省下，斷路器只省得到後面那 96 輪。
 #
 # 探針誤判過嚴時走 `--skip-preflight`，NEVER 靠拿掉探針本身解決。
