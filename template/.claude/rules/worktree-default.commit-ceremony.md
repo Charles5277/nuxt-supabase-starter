@@ -28,6 +28,9 @@ Local edits will be reverted by the next sync.
 
 ### 為什麼從 v2 改 v3
 
+<!-- starter:strip-begin -->
+v2 失敗模式（perno 2026-05-17）：各 session 在 `/wt` 返回時各自 squash 進 main 互撞 — main 累積 cross-session unstaged WIP、`/commit` 被人工檢查 Gate 卡死、squash 撞 blocker 需 `cross-session-block-*` stash 強推、HANDOFF entries 全 stale。
+<!-- starter:strip-end -->
 
 v3 atomic landing 解這些：main 永遠 deployable；多 session 平行不污染 main（每條 worktree 各自保留到 archive）；一個 ceremony land 全部；人工檢查 Gate 與 archive gate 對齊為同一道進 main 關卡。
 
@@ -78,9 +81,9 @@ Skill 自己 fork worktree、有**清楚 end-of-skill 完成點**、**無下游 
 - 差集（`allDirty \ blockers`）若含**別 session 認領**（`otherSession`）的 dirty → **fail-loud STOP / refuse auto-stash**（與既有 blocker-only / pre-fork guard 一致），列出 `<path> → <session-id>` 並要 user 等別 session 收斂或協調，**NEVER** 默默 bulk-stash 捲走別 session WIP；
 - 差集為空 / 全屬本 change / 為**無主**（unclaimed）dirty → 維持既有正常 flow（`--auto-stash` 本就設計來吞無主 dirty，squash 落地後**自動 pop 回 main**，不留 stash tail；只有 pop 撞真衝突才走 `stash-reconcile`）。
 
-⚠️ **guard 的有效性綁在 claim 有沒有宣告 `expected_paths`**：`classifyDirtyPaths` 是拿 dirty path 去比對 `c.expected_paths`，claim 沒帶 paths 就**永遠比不中**，`otherSession` 恆為空、guard 恆放行。因此 [[worktree-default]] §1 那條「main 累積 dirty 時寫 coarse claim **要帶 `--expected-paths`**」不是禮貌性建議，它是本 guard 唯一的輸入來源。（2026-08-03 <consumer-a> 實證：3 個 active claim 的 `expected_paths` 全空，88 條 unclaimed dirty 全數被 bulk-stash 捲走而 guard 零告警。）
+⚠️ **guard 的有效性綁在 claim 有沒有宣告 `expected_paths`**：`classifyDirtyPaths` 是拿 dirty path 去比對 `c.expected_paths`，claim 沒帶 paths 就**永遠比不中**，`otherSession` 恆為空、guard 恆放行。因此 [[worktree-default]] §1 那條「main 累積 dirty 時寫 coarse claim **要帶 `--expected-paths`**」不是禮貌性建議，它是本 guard 唯一的輸入來源。（2026-08-03 perno 實證：3 個 active claim 的 `expected_paths` 全空，88 條 unclaimed dirty 全數被 bulk-stash 捲走而 guard 零告警。）
 
-**為什麼**：claim guard 原本只假設「危險 = branch 要 land 的改動撞到別 session 改同檔」，但 bulk-stash 的副作用是「為清出乾淨 working tree 做 squash，把**所有** dirty 移走」——範圍遠大於 branch changeset。不在 branch changeset 的別 session 認領檔不是 blocker，guard 從未檢查，bulk-stash 照捲（2026-05-29 <consumer-b>：vending merge-back `--auto-stash` 捲走別 session my-kpi 19 檔 WIP）。**正解是擴大 guard 檢查範圍，不是縮小 stash 範圍**（pathspec stash 會踩 git 2.50.1 scope leak，見 `pitfall-git-stash-pathspec-scope-leak`）。詳見 `pitfall-merge-back-autostash-bulk-captures-other-session-wip`。
+**為什麼**：claim guard 原本只假設「危險 = branch 要 land 的改動撞到別 session 改同檔」，但 bulk-stash 的副作用是「為清出乾淨 working tree 做 squash，把**所有** dirty 移走」——範圍遠大於 branch changeset。不在 branch changeset 的別 session 認領檔不是 blocker，guard 從未檢查，bulk-stash 照捲（2026-05-29 TDMS：vending merge-back `--auto-stash` 捲走別 session my-kpi 19 檔 WIP）。**正解是擴大 guard 檢查範圍，不是縮小 stash 範圍**（pathspec stash 會踩 git 2.50.1 scope leak，見 `pitfall-git-stash-pathspec-scope-leak`）。詳見 `pitfall-merge-back-autostash-bulk-captures-other-session-wip`。
 
 ### Stash 操作必 verify create
 

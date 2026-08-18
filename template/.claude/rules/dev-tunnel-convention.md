@@ -20,9 +20,9 @@ Local edits will be reverted by the next sync.
 
 ## § 1 — Zone 必在當前 account 內（multi-account misdirection）
 
-**Convention**：dev tunnel hostname 一律走 `<consumer-id>-dev.<maintainer-domain>`（org convention）。**NEVER** 自由挑其他 zone（`bigbyteedu.com` / 個人域名）。
+**Convention**：dev tunnel hostname 一律走 `<consumer-id>-dev.yudefine.com.tw`（org convention）。**NEVER** 自由挑其他 zone（`bigbyteedu.com` / 個人域名）。
 
-**為什麼**：`cloudflared tunnel route dns` 在多 Cloudflare account 環境下，若 hostname 對應 zone 不在當前 `~/.cloudflared/cert.pem` 綁定的 account 內，**不會 fail-loud**，而是 silently 把整段 hostname 當 subdomain prefix 附加到該 account 第一個 zone（如寫成 `<host>.<maintainer-domain>.bigbyteedu.com`），外部 DNS 永遠 resolve 不到，但 CLI exit 0。
+**為什麼**：`cloudflared tunnel route dns` 在多 Cloudflare account 環境下，若 hostname 對應 zone 不在當前 `~/.cloudflared/cert.pem` 綁定的 account 內，**不會 fail-loud**，而是 silently 把整段 hostname 當 subdomain prefix 附加到該 account 第一個 zone（如寫成 `<host>.yudefine.com.tw.bigbyteedu.com`），外部 DNS 永遠 resolve 不到，但 CLI exit 0。
 
 **權威來源**：
 - vite-tunnel skill cookbook `~/offline/clade/vendor/snippets/vite-tunnel/bin/dev-tunnel-setup.sh`（pre-flight zone check：用 CF API 驗 zone 在當前 token account 內，不在則 fail-loud + 列三條切 account 出路）+ 同目錄 README § 多 Cloudflare account 使用情境
@@ -38,7 +38,7 @@ Local edits will be reverted by the next sync.
 
 **權威來源**：
 - 規約 + 三種錯誤 token 來源對照表：[[dev-port-allocation]] § 2.5（含 `.env.local` 三件套範本）
-- Token 來源：<consumer-h> `.env.local` 的 `CLOUDFLARE_API_KEY`（既有可用）/ Notion `Scrects`（待補 cfat_）
+- Token 來源：rental-scout `.env.local` 的 `CLOUDFLARE_API_KEY`（既有可用）/ Notion `Scrects`（待補 cfat_）
 
 **Pitfall**：[[pitfall-vite-plugin-cloudflare-tunnel-token-scope]]
 
@@ -87,7 +87,7 @@ Local edits will be reverted by the next sync.
 # ruleset id 從 http_request_cache_settings entrypoint 取，再 POST 一條 rule
 curl -s -X POST -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" \
   "https://api.cloudflare.com/client/v4/zones/$ZONE/rulesets/$RULESET/rules" \
-  -d '{"expression":"(ends_with(http.host, \"-dev.<maintainer-domain>\"))","action":"set_cache_settings","action_parameters":{"cache":false},"enabled":true,"description":"Dev tunnels: bypass CDN cache"}'
+  -d '{"expression":"(ends_with(http.host, \"-dev.yudefine.com.tw\"))","action":"set_cache_settings","action_parameters":{"cache":false},"enabled":true,"description":"Dev tunnels: bypass CDN cache"}'
 ```
 
 生效約 10-15 秒，**不需要**先 purge（bypass 的請求不會去讀既有條目；反過來說 purge by URL 對 `@fs` 這種路徑清不乾淨，別把時間花在那）。

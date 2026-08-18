@@ -316,7 +316,7 @@ awk '/^## 人工檢查/{mr=1; next} /^## /{mr=0} !mr && /^- \[ \]/{print NR": "$
 
    **Skip condition**: if the gate script does not exist (consumer pre-propagation state), warn and proceed (fail-open, matches existing Check 5 fail-open behavior).
 
-   **Layer C — data-sanity audit**（clade fork addition; pre-handoff quality gates; not in upstream spectra）：archive-gate 過後、spec-sync 前，對本 change 跑 static data-shape audit，擋住「client query param literal 違反 server zod bound → silent 4xx → lookup map empty → admin list column 整列 fallback」這類 typecheck/lint/視覺都抓不到的資料形狀問題（<consumer-a> `app-status-badge-extraction` root cause）：
+   **Layer C — data-sanity audit**（clade fork addition; pre-handoff quality gates; not in upstream spectra）：archive-gate 過後、spec-sync 前，對本 change 跑 static data-shape audit，擋住「client query param literal 違反 server zod bound → silent 4xx → lookup map empty → admin list column 整列 fallback」這類 typecheck/lint/視覺都抓不到的資料形狀問題（perno `app-status-badge-extraction` root cause）：
 
    ```bash
    node <clade-vendor>/scripts/audit-data-sanity.ts --consumer-path . --json

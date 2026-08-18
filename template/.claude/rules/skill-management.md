@@ -36,7 +36,7 @@ Local edits will be reverted by the next sync.
 2. **commit 必須帶上 `skills-lock.json`**。`npx skills add` 會重算 lock 內**所有** entry 的 `computedHash`，不只你剛裝的那一支。漏帶會讓 lock 與實際安裝不一致，下次 `npx skills check` 報 drift。
 3. **NEVER 讓 `.claude/skills/<name>` 是 symlink 指向未 tracked 的 target。** 這是三種失效裡最隱蔽的一種：symlink 本身進了版控，target 內容沒有——clone 下來 symlink 在、skill 載不到，而且**沒有任何錯誤訊息**。agent 只是安靜地少了那個能力。
 
-> 2026-08-02 實證：<consumer-b> 與 <consumer-d> 各有 22 支第三方 skill 處於此狀態，symlink 指向 `.agents/skills/<name>` 而該路徑從未存在（sync-to-codex 只投影 `.claude/skills/` 的**真實內容**，本身是 symlink 的項目投影不過去）。兩個 repo 因此各少了 22 支 skill，時間長度不明——沒有機制會發現。
+> 2026-08-02 實證：TDMS 與 yuntech-usr-sroi 各有 22 支第三方 skill 處於此狀態，symlink 指向 `.agents/skills/<name>` 而該路徑從未存在（sync-to-codex 只投影 `.claude/skills/` 的**真實內容**，本身是 symlink 的項目投影不過去）。兩個 repo 因此各少了 22 支 skill，時間長度不明——沒有機制會發現。
 
 ## 例外：node_modules-backed symlink
 

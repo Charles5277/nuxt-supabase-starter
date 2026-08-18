@@ -267,7 +267,7 @@ Without a plain-language layer, propose may capture the surface motivation (e.g.
 - **NOT a substitute for technical Convergence** — the conclusion summary in "## Convergence" still happens after, with proper capability / spec / artifact names.
 - **NOT triggered for trivial topics** — variable renames and pure refactors don't need synthesis.
 
-### Worked example (<consumer-b> warehouse inventory)
+### Worked example (TDMS warehouse inventory)
 
 Topic: "add 'part' to warehouse_items.item_category enum + integrate vending tool aggregation".
 

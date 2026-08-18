@@ -26,7 +26,7 @@ always-on 觸發反射寫在 CLAUDE.md 注入段（`claude-md/core-snippets/evlo
 
 ## 為什麼這條 rule 存在
 
-實證（<consumer-b> prod incident）：agent 拿到 prod bug（「報工 NFC 全部失敗」「刀位 PATCH 503」）後，第一反射是 grep code + 派 Explore agent 推測，自評「root cause 多為推測」；evlog 是 **user nudge「查 prod log」之後**才查的。一旦查了 evlog，立刻拿到決定性證據並**推翻** code 推測（NFC 其實 prod 當天仍回 23,105 次 200；真兇是 21.6 秒慢查詢）。
+實證（TDMS prod incident）：agent 拿到 prod bug（「報工 NFC 全部失敗」「刀位 PATCH 503」）後，第一反射是 grep code + 派 Explore agent 推測，自評「root cause 多為推測」；evlog 是 **user nudge「查 prod log」之後**才查的。一旦查了 evlog，立刻拿到決定性證據並**推翻** code 推測（NFC 其實 prod 當天仍回 23,105 次 200；真兇是 21.6 秒慢查詢）。
 
 根因：agent 的 standing「第一反射」是 code-first（codebase-memory-mcp / grep），對 prod **runtime** 症狀方向是反的。evlog wide event 是「實際發生了什麼」的 ground truth，但沒有規約把它擺到調查的第一步，於是缺的調查本能要 user 人工補。
 
@@ -72,7 +72,7 @@ config 內容或 mtime 變了 / port 被別的 process 佔走 / DB 被 reset / b
 （`/var/log/auth.log` 可能根本不存在、Portainer CE 不記 audit log）；答不出來時該退回本節換一個
 更便宜的問題，不是換更深的 log。
 
-> 實證：2026-08-08 <consumer-b> 調查 Sentry <consumer-b>-2E —— 八條鑑識指令後結論是「誰重建了容器無法從 log 證實」，
+> 實證：2026-08-08 TDMS 調查 Sentry TDMS-2E —— 八條鑑識指令後結論是「誰重建了容器無法從 log 證實」，
 > 而答案在一條 `ls -la` 裡（override 檔 mtime 比容器建立早 15 秒、旁邊躺著當天日期的 `.bak`）。
 > 見 `docs/pitfalls/2026-08-08-infra-change-attribution-skips-concurrent-session-check.md`。
 

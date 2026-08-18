@@ -35,8 +35,8 @@ Lease identity 是 **(consumer_id, port)**，不是 consumer_id 單獨一個：
 | `dev.ports[0].port`（primary），或 port 解不出來 | `/tmp/<consumer_id>-verification-lease.json` |
 | 其他 port（多 app 的第二支 / review slot） | `/tmp/<consumer_id>-<port>-verification-lease.json` |
 
-**為什麼不是 per consumer**：一個 consumer 可以同時有多台合法、互不相干的 dev server —— <consumer-a> 的
-`dev:<client-a>`(3040) 與 `dev:shared`(3045) 是兩個不同 app，再加上為了「一邊開發一邊人工檢查」開的
+**為什麼不是 per consumer**：一個 consumer 可以同時有多台合法、互不相干的 dev server —— perno 的
+`dev:bigbyte`(3040) 與 `dev:shared`(3045) 是兩個不同 app，再加上為了「一邊開發一邊人工檢查」開的
 review slot 就有三台。共用一個 lease 檔時第二台一律被判衝突（strict → refuse），而那個衝突是**假的**：
 它們根本沒共用 port。
 
@@ -52,7 +52,7 @@ review slot 就有三台。共用一個 lease 檔時第二台一律被判衝突�
   從 worktree 跑又沒帶 `--consumer-meta` 的指令靜默操作錯的 lease：release 釋放不到、conflict
   偵測不到，跨 worktree 隔離形同虛設。正解是 `git rev-parse --git-common-dir`（main 回
   `<repo>/.git`、linked worktree 回 `<main-repo>/.git/worktrees/<slug>`），截到 `.git` 的父層即
-  main worktree（2026-07-26 <consumer-a> 實證：worktree 內 `stop` 後 main 的 lease 檔原封不動殘留）
+  main worktree（2026-07-26 perno 實證：worktree 內 `stop` 後 main 的 lease 檔原封不動殘留）
 
 ## 有界性：agent 租約 vs 人類租約
 

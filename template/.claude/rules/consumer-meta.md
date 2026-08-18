@@ -16,7 +16,7 @@ Local edits will be reverted by the next sync.
 
 過去這些知識散在：
 
-- memory entries（「<consumer-a> 是 trunk-based」「<consumer-b> OAuth port pin」）
+- memory entries（「perno 是 trunk-based」「TDMS OAuth port pin」）
 - 規則內 hardcoded（`proactive-skills.md § Dev Server Auto-Spawn` 寫死 3001-3050）
 - audit script 內 grep 推測
 - 各 consumer 自家 local rule 自己重述
@@ -52,8 +52,8 @@ Local edits will be reverted by the next sync.
   vendor/snippets/
     consumer-meta/
       README.md
-      <consumer-b>.consumer-meta.json        # 範例（fully filled）
-      <consumer-a>.consumer-meta.json       # 範例（fully filled）
+      TDMS.consumer-meta.json        # 範例（fully filled）
+      perno.consumer-meta.json       # 範例（fully filled）
 
 ~/offline/<each-consumer>/
   .claude/
@@ -82,8 +82,8 @@ Local edits will be reverted by the next sync.
   "generatedAt": "2026-05-19T12:30:00Z",
   "generator": "sync-consumer-meta.ts@<version>",
   "consumers": {
-    "<consumer-b>": {
-      "declared": { /* full content of <consumer-b>/.claude/consumer-meta.json */ },
+    "TDMS": {
+      "declared": { /* full content of TDMS/.claude/consumer-meta.json */ },
       "derived": {
         "framework": {
           "name": "nuxt",
@@ -178,7 +178,7 @@ fleet 的部署形態收斂成**三型**。新專案 **MUST** 貼齊其中一型
 **MUST** 用 `$comment` 寫明是哪一種：
 
 - **尚未定型** — 合法但不該長期停在這，沒有 type 的 consumer 拿不到任何 type-scoped 的能力
-- **不適用** — 該 consumer 不是 Nuxt app。實例：`<consumer-d>` 是 5 個 Go service 的 matrix build，無 preset、無 D1/Supabase 概念
+- **不適用** — 該 consumer 不是 Nuxt app。實例：`cnc-link-platform` 是 5 個 Go service 的 matrix build，無 preset、無 D1/Supabase 概念
 
 **NEVER** 為了「讓每個 consumer 都有 type」而多開一個 enum 值容納單一特例——`null` + 明寫不適用的成本低得多。
 

@@ -116,7 +116,7 @@ Verify channel baseline 是 consumer 端**已預先 ready** 的 codebase 層長�
 - 檔有但 dev DB 沒 → 走該 consumer 的 sanctioned fixture-apply 路徑（self-hosted：`pnpm supabase:sync` + `pnpm db:reset`，⚠️ 共享 dev DB **先協調**），**NEVER** 起 local supabase 繞過（per [[db-topology-invariant]]）。
 - `supabase-local` consumer 不受此限：seed.sql + 本地 `supabase db reset` 即 dev DB 真實狀態。
 
-**實證（2026-05-30）**：<consumer-b>（`db-runtime: supabase-self-hosted`）的 receiving-capacity verify items 引用 `φ12x50` / `PO-2026-*` fixture，存在 `seed.sql` 檔但 dev DB `?search=φ12x50` 回 0（從未 sync+reset 到 LXC）→ verify 撞空資料。grep-seed-only 的 baseline check 把它誤判為 ready，agent 又因 path-scoped `database.md` 沒載入而誤試 local supabase。
+**實證（2026-05-30）**：TDMS（`db-runtime: supabase-self-hosted`）的 receiving-capacity verify items 引用 `φ12x50` / `PO-2026-*` fixture，存在 `seed.sql` 檔但 dev DB `?search=φ12x50` 回 0（從未 sync+reset 到 LXC）→ verify 撞空資料。grep-seed-only 的 baseline check 把它誤判為 ready，agent 又因 path-scoped `database.md` 沒載入而誤試 local supabase。
 
 #### 禁止用 ephemeral API data 拍 verify 截圖（hard rule）
 
@@ -127,13 +127,13 @@ Step 8a evidence collection 發現 seed 缺 fixture 時，**MUST** 先補 seed �
 
 **Why**：ephemeral data 只活在當前 dev DB state。同 session 或別 session 觸發 db:reset（推新 migration、修 seed、跨 change 共享 dev DB）時全部消失 → 截圖 stale → 被迫重建 + 重拍。
 
-**實證（2026-06-19）**：<consumer-b> shipment-loading-and-spec-items 的 verify:ui 截圖用 `POST /api/v1/shipments` 臨時建出貨單 #4 → 同 session 修 tray_completions TZ bug 跑 db:reset → 出貨單消失 → 6 張截圖全部 stale → review-gui 標⚠ → user 回報 #5.1「報錯」。Per [[pitfall-verify-evidence-ephemeral-fixture-washed-by-db-reset]]。
+**實證（2026-06-19）**：TDMS shipment-loading-and-spec-items 的 verify:ui 截圖用 `POST /api/v1/shipments` 臨時建出貨單 #4 → 同 session 修 tray_completions TZ bug 跑 db:reset → 出貨單消失 → 6 張截圖全部 stale → review-gui 標⚠ → user 回報 #5.1「報錯」。Per [[pitfall-verify-evidence-ephemeral-fixture-washed-by-db-reset]]。
 
 #### Dev-login route missing → scaffold-first hard rule
 
 ##### Detection（hard rule）
 
-任何時候要**斷定** consumer **有沒有** dev-login route——不論目的是 (a) 決定要不要 scaffold、(b) 判斷某 `[verify:api]` item 是否 baseline-blocked、(c) **向 user 報告 dev-login 不存在 / verify 被 baseline 擋住**、還是 (d) **確認 review-gui「🚧 baseline 不齊」badge**——**MUST** 使用以下兩種路徑之一，**NEVER** 用 lazy grep / narrow `find`（如 `find server app -path "*_dev-login*"`、`grep -r _dev-login server/`）。這類 root-only 搜尋對 monorepo consumer（<consumer-a> 的 route 在 `packages/core/server/...`）**必** false-negative：
+任何時候要**斷定** consumer **有沒有** dev-login route——不論目的是 (a) 決定要不要 scaffold、(b) 判斷某 `[verify:api]` item 是否 baseline-blocked、(c) **向 user 報告 dev-login 不存在 / verify 被 baseline 擋住**、還是 (d) **確認 review-gui「🚧 baseline 不齊」badge**——**MUST** 使用以下兩種路徑之一，**NEVER** 用 lazy grep / narrow `find`（如 `find server app -path "*_dev-login*"`、`grep -r _dev-login server/`）。這類 root-only 搜尋對 monorepo consumer（perno 的 route 在 `packages/core/server/...`）**必** false-negative：
 
 > **review-gui 的「🚧 baseline 不齊」badge 不是 file-existence 真相。** 它是 derived signal（且曾因自身 root-only 偵測對 monorepo consumer false-positive）。看到 badge **不代表** route 不存在；要斷定 absence **MUST** 跑下方 helper / audit script 交叉確認，**NEVER** 把 badge 當證據直接回報 user。
 
@@ -153,9 +153,9 @@ Step 8a evidence collection 發現 seed 缺 fixture 時，**MUST** 先補 seed �
    const auth = helper.detectAuthModule(consumerPath)      // { module, source, stackHint }
    ```
 
-**Why hard rule**：lazy grep 在 2026-05-24 <consumer-b> session 實證**漏判 4/6 consumer**（legacy `__test-login.*` / monorepo subpath / better-auth POST shape 全沒命中），誤升級「結構性 adoption gap」task，浪費一輪 subagent + publish + 主線 token。Audit script + helper module 是清掉這類錯誤推理的單一 SoT。
+**Why hard rule**：lazy grep 在 2026-05-24 TDMS session 實證**漏判 4/6 consumer**（legacy `__test-login.*` / monorepo subpath / better-auth POST shape 全沒命中），誤升級「結構性 adoption gap」task，浪費一輪 subagent + publish + 主線 token。Audit script + helper module 是清掉這類錯誤推理的單一 SoT。
 
-**2026-05-25 <consumer-a> incident（second occurrence，跨工具）**：主線看到 review-gui 對 3 個 <consumer-a> change 標「baseline 不齊」，再用 `find server app -path "*_dev-login*"`（root-only）「確認」後**向 user 斷言 dev-login 不存在**。兩個依據犯同一個 monorepo root-only 盲區——<consumer-a> 的 route 一直在 `packages/core/server/routes/auth/_dev-login.get.ts`。Root cause 雙重：(1) review-gui `detectVerifyBaseline()` 重刻 root-only path 清單、沒復用本 helper（**已修**，改 delegate `detectDevLoginRoute()`）；(2) 主線在「確認 badge → 向 user 報告」的框架下沒套用本 hard rule（觸發條件已於上方擴寫涵蓋 (c)/(d)）。詳見 [[pitfall-review-gui-baseline-detection-root-only-monorepo-miss]]。
+**2026-05-25 perno incident（second occurrence，跨工具）**：主線看到 review-gui 對 3 個 perno change 標「baseline 不齊」，再用 `find server app -path "*_dev-login*"`（root-only）「確認」後**向 user 斷言 dev-login 不存在**。兩個依據犯同一個 monorepo root-only 盲區——perno 的 route 一直在 `packages/core/server/routes/auth/_dev-login.get.ts`。Root cause 雙重：(1) review-gui `detectVerifyBaseline()` 重刻 root-only path 清單、沒復用本 helper（**已修**，改 delegate `detectDevLoginRoute()`）；(2) 主線在「確認 badge → 向 user 報告」的框架下沒套用本 hard rule（觸發條件已於上方擴寫涵蓋 (c)/(d)）。詳見 [[pitfall-review-gui-baseline-detection-root-only-monorepo-miss]]。
 
 ##### Canonical route shapes by auth-module（detection 真相層）
 
@@ -173,16 +173,16 @@ Helper 掃描 priority：**repo root canonical → repo root legacy → repo roo
 
 ##### False-negative case study（2026-05-24）
 
-<consumer-b> HANDOFF.md 跑 lazy grep `_dev-login*` → 報「5/6 missing」要求 clade 結構性 scaffold-everywhere。實際 audit:
+TDMS HANDOFF.md 跑 lazy grep `_dev-login*` → 報「5/6 missing」要求 clade 結構性 scaffold-everywhere。實際 audit:
 
 | Consumer | 實際狀態 | Lazy grep 結果 |
 | --- | --- | --- |
-| <consumer-b> | ✅ `server/routes/auth/__test-login.get.ts` (legacy, 166 行) | ❌ false-negative |
-| <consumer-a> | ✅ `packages/core/server/routes/auth/_dev-login.get.ts` (monorepo) | ❌ false-negative |
-| <consumer-d> | ✅ `server/routes/auth/_dev-login.get.ts` | ✅ |
-| <consumer-c> | ✅ `server/api/_dev/login.post.ts` (better-auth POST) | ❌ false-negative |
-| <consumer-h> | ❌ MISSING (nuxt-auth-utils + libsql-drizzle, no cookbook template) | ✅ |
-| <consumer-e> | ❌ MISSING (同上) | ✅ |
+| TDMS | ✅ `server/routes/auth/__test-login.get.ts` (legacy, 166 行) | ❌ false-negative |
+| perno | ✅ `packages/core/server/routes/auth/_dev-login.get.ts` (monorepo) | ❌ false-negative |
+| yuntech-usr-sroi | ✅ `server/routes/auth/_dev-login.get.ts` | ✅ |
+| nuxt-edge-agentic-rag | ✅ `server/api/_dev/login.post.ts` (better-auth POST) | ❌ false-negative |
+| rental-scout | ❌ MISSING (nuxt-auth-utils + libsql-drizzle, no cookbook template) | ✅ |
+| co-purchase | ❌ MISSING (同上) | ✅ |
 
 **真實 adoption 4/6 + 1 monorepo misdetected + 2 真缺**（不是 1/6）。修法源頭 clade 2026-05-24 land：audit script + helper module + dispatcher fix（`scripts/audit-dev-login-adoption.ts` + `vendor/snippets/dev-auth/lib/detect-dev-login-route.ts` + `vendor/scripts/codex-dispatch-screenshot-verify.ts` 對齊）。下次 agent / 主線撞「is dev-login present？」即走上述 detection 路徑，**NEVER** 再 lazy grep。
 

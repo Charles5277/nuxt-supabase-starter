@@ -15,7 +15,7 @@ Local edits will be reverted by the next sync.
 > Phase 3.3 of the pre-handoff quality gates（master plan
 > `spectra-pre-handoff-quality-gates-master-plan.md`）. 本檔顯式宣告 spectra
 > workflow 每個 phase / checkpoint **負責抓什麼**，消除「每層都覺得不是我」的
-> ownership gap — 那是 <consumer-a> `app-status-badge-extraction`（2026-05-24）整列「-」
+> ownership gap — 那是 perno `app-status-badge-extraction`（2026-05-24）整列「-」
 > UX defect 穿過 propose / apply / design review / verify / manual review **每一層**
 > 的根本設計缺口。
 
@@ -50,7 +50,7 @@ Layer A       Layer B               Layer C                   Layer E.1 + E.2   
 | **Manual review**（review-gui） | user 對**主觀視覺 / UX / 真人判斷**做最終驗收 | mechanical defect（應在上游被抓，user 不該當 last-line defense for trivial defect） | review-gui |
 | **UI-INVARIANTS**（Layer D） | 宣告式 baseline：list/table 不可整欄 fallback、lookup 解析率 100%、0 個 4xx/5xx、row count 匹配 seed、critical action 有確認框 | （不執行偵測，被 B/C/E 引用） | **Layer D** `ui-invariants.template.md` + `ui-invariants-resolve.ts` |
 
-## 事故失效鏈 case study（<consumer-a> `app-status-badge-extraction`）
+## 事故失效鏈 case study（perno `app-status-badge-extraction`）
 
 `attendance/amendments.vue:32` 的 `useEmployeeListQuery({ perPage: 200 })` 違反 server
 schema `max(100)` → API 400 → `employeeNameMap` empty → 員工 column 整列「-」。

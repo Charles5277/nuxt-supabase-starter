@@ -65,7 +65,7 @@ import { calcInvoice } from '~/server/utils/invoice'       // ❌ value——ser
 要共用實作就搬到 `shared/`，不要從 client 側伸手進 `server/`。
 
 **這道 gate 是 `layer: ratchet`——它只擋新增，不擋存量。** 既有的跨界 import 會原地留著且
-不報任何訊號（2026-08 實測：<consumer-b> 有 2 筆存量落在 `app/**` 內，正好是 gate 宣稱管的範圍）。
+不報任何訊號（2026-08 實測：TDMS 有 2 筆存量落在 `app/**` 內，正好是 gate 宣稱管的範圍）。
 所以「pre-commit 綠」**NEVER** 讀成「這個 repo 沒有跨界 import」——它只代表你這次沒有新增。
 
 **另一個缺口是範圍**：`fileGlob` 只有 `app/**`，root 層 `composables/**`、`components/**`
@@ -102,7 +102,7 @@ fleet 表每格是 `violations / scanned` 雙數字，三種狀態不可混讀�
 
 `max-lines-per-function` / `max-lines` / `complexity` / `max-depth` / `max-params` **刻意不收**。
 它們量的是規模與分支密度，不是職責內聚：300 行零分支的 mapper 是 SRP 違規但 complexity 抓不到，
-40 行的 exhaustive switch 是好碼卻會被誤傷。<consumer-b> 實測 862 violations / 542 檔（2026-08 快照），
+40 行的 exhaustive switch 是好碼卻會被誤傷。TDMS 實測 862 violations / 542 檔（2026-08 快照），
 其中 88% 的違規檔近 30 天仍在改動——staged-only 救不了，開成 error 等於天天擋路。對照組
 microsoft/TypeScript、vuejs/core、vitejs/vite、facebook/react、nuxt/nuxt、antfu/eslint-config、xo
 八個專案無一啟用其中任何一條（2026-08 快照）。

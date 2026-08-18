@@ -190,7 +190,7 @@ git for-each-ref "refs/wt-baseline/<slug>/" --format='%(refname)'
 
 ### 範例
 
-❌ 不夠（2026-05-24 <consumer-a> HANDOFF Next Steps #4 實證問題寫法）：
+❌ 不夠（2026-05-24 perno HANDOFF Next Steps #4 實證問題寫法）：
 
 ```markdown
 ### 4. Nuxt UI v4 audit refactor candidates（9 條，本次稽核產出）
@@ -232,7 +232,7 @@ git for-each-ref "refs/wt-baseline/<slug>/" --format='%(refname)'
 
 ### 為什麼這條 rule 存在
 
-2026-05-24 實證：<consumer-a> HANDOFF Next Steps #4 列 9 條 Nuxt UI audit candidate，只給 1-line summary + 指向 audit doc。當天另開 remote-control session 嘗試接 C1 → `/spectra-propose app-status-badge-extraction` 後第一句就是「argument 看起來像在說『把 app 內的 status badge 抽出來』，但細節不夠 — 是哪種 badge？目前散落在哪？要抽到哪？」，開始重跑 grep / glob 探索。
+2026-05-24 實證：perno HANDOFF Next Steps #4 列 9 條 Nuxt UI audit candidate，只給 1-line summary + 指向 audit doc。當天另開 remote-control session 嘗試接 C1 → `/spectra-propose app-status-badge-extraction` 後第一句就是「argument 看起來像在說『把 app 內的 status badge 抽出來』，但細節不夠 — 是哪種 badge？目前散落在哪？要抽到哪？」，開始重跑 grep / glob 探索。
 
 Root cause = HANDOFF writer（包含 Mode B § 2B.4 推薦階段）把 audit doc 當「receiver 自己會 grep」的 implicit context，沒 inline 必要細節。Receiver 重做 investigation = 重複 main session 已 sunk 的 token，且容易 scope drift（receiver 可能對「44 callsites」「8 files」「Pattern A vs B vs C」的邊界判斷不同）。
 

@@ -64,11 +64,11 @@ echo "PASS: ${SIZE} bytes + DOM verified"
   echo "PASS: (e) item-description cross-check — mode=$ACTUAL_MODE matches item requirement"
   ```
 
-  （per [[pitfall-verified-ui-screenshot-content-mismatch-passes-review]]：<consumer-a> 2026-07-20 #3.1 要驗 light mode，截圖卻是 dark mode；#3.2 要驗 color mode 切換，截圖卻是 command palette 搜尋——四層 (a)-(d) 全過但圖文完全不符）
+  （per [[pitfall-verified-ui-screenshot-content-mismatch-passes-review]]：perno 2026-07-20 #3.1 要驗 light mode，截圖卻是 dark mode；#3.2 要驗 color mode 切換，截圖卻是 command palette 搜尋——四層 (a)-(d) 全過但圖文完全不符）
 
 **auth 回傳非 200 = 立即停手**：browser 內 `fetch __test-login` / cookie injection 的 HTTP status **MUST** 檢查，非 200（含 500）→ **STOP 截圖流程**，先修 auth，**NEVER** 忽略 status 繼續拍。
 
-**NEVER** 拍完不驗就寫 annotation — 這等於把驗證成本轉嫁 user 且浪費整個 review-gui 來回。（per [[pitfall-worktree-env-assumption-and-unverified-evidence]]，2026-06-29 <consumer-b> 再犯：auth fetch 回 500 被忽略，3 張 login page 當 evidence 交出）
+**NEVER** 拍完不驗就寫 annotation — 這等於把驗證成本轉嫁 user 且浪費整個 review-gui 來回。（per [[pitfall-worktree-env-assumption-and-unverified-evidence]]，2026-06-29 TDMS 再犯：auth fetch 回 500 被忽略，3 張 login page 當 evidence 交出）
 
 ## MUST 8 — review:ui 既有 `[x]` 需 agent 自拍 evidence 佐證
 
@@ -94,4 +94,4 @@ node --experimental-strip-types vendor/scripts/audit-screenshot-staleness.ts \
 # 5. 更新 (verified-ui:) annotation timestamps
 ```
 
-**NEVER** 只重拍被標 `（issue:）` 的那張 — 同次 code 改動影響的 sibling items 截圖同樣過時。（per [[pitfall-issue-fix-refreshes-only-flagged-screenshot-leaves-batch-stale]]；<consumer-a> 2026-07-04 regression 實證：timeline 上色改動後只重拍 #1.1，其餘 7 張 stale → bucket 卡 `readyForEvidence`）
+**NEVER** 只重拍被標 `（issue:）` 的那張 — 同次 code 改動影響的 sibling items 截圖同樣過時。（per [[pitfall-issue-fix-refreshes-only-flagged-screenshot-leaves-batch-stale]]；perno 2026-07-04 regression 實證：timeline 上色改動後只重拍 #1.1，其餘 7 張 stale → bucket 卡 `readyForEvidence`）

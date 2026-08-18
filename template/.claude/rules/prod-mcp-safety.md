@@ -17,6 +17,6 @@ Local edits will be reverted by the next sync.
 
 **NEVER** 放 `allow` 或 `ask` — `allow` = Claude 不經確認即可對 prod DB 執行任意 SQL；`ask` = 一次 approve 後同 session 不再問。
 
-違反後果：<consumer-d> prod DB 被建立孤兒表 `public.sutekh`（2026-06-22）。
+違反後果：yuntech-usr-sroi prod DB 被建立孤兒表 `public.sutekh`（2026-06-22）。
 
 偵測：`scripts/audit-tooling-drift.ts` `prodMcpPermission` signal。

@@ -53,12 +53,23 @@ scenario，5 reps 兩臂）：無規約時 **0/5** 的 brief 帶准許資源清�
 
 清單寫不出來 = 這件事還沒被消化到可以外派（回 § 派不派 的預消化紀律）。
 
+### MUST：檔案要逐個列路徑，NEVER 只給目錄名
+
+brief 要 carrier 讀一批檔（截圖、log、fixture）時，**MUST 逐項列出精確相對路徑**，
+NEVER 只寫「目錄：`./screenshots/`」讓它自己列。2026-08-18 實測：同一批圖、同一個 cwd，
+只給目錄名時 `sol-cursor` **連續 7 發**回「該目錄內沒有截圖」並把每項判 `UNCERTAIN`（檔案確實在）；
+換成逐檔路徑後 **5 發全對**。加一句「先列出目錄再逐一開啟」只把失敗率從 100% 降到約 50%，
+**不是修法**。
+
+失敗方向雖保守（回 UNCERTAIN 而非假 PASS），但「**carrier 沒去看**」與「**證據真的不足**」
+在輸出上同形——一個永遠回 UNCERTAIN 的 gate 沒有判定價值。取證見 [[agent-routing]] rationale。
+
 ### 查表：什麼不進 dispatch prompt
 
 | 類別 | 改帶什麼 |
 | --- | --- |
 | 憑證與 secret 的**值**（`.env` 任一行、API key、token、cookie、session id、DB 連線字串、private key） | 變數名 + 檔案路徑（「值在目標 repo `.env.local` 的 `SUPABASE_SERVICE_ROLE_KEY`，你自己讀」） |
-| 客戶個資（真實姓名 / email / 電話 / 地址 / 身分證字號 / 帳務與訂單明細） | 只給 id 與欄位型別，或同 schema 的假資料；fleet 內有客戶案（<consumer-b> / <consumer-a>） |
+| 客戶個資（真實姓名 / email / 電話 / 地址 / 身分證字號 / 帳務與訂單明細） | 只給 id 與欄位型別，或同 schema 的假資料；fleet 內有客戶案（TDMS / perno） |
 | 未公開商業內容（報價、合約條款、客戶內部策略） | 只給判斷所需的結論，不給原文 |
 | 完整 log / DB dump / request body 原文 | 取樣 + 遮蔽後的片段 |
 

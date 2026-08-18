@@ -43,7 +43,7 @@ Local edits will be reverted by the next sync.
 
 4. **Impl blocked ≠ review items blocked（hard rule）**：即使 impl 仍 blocked，**MUST** 檢查 `## 人工檢查` 區是否有 Claude-actionable items（`issued > 0` / `verifyClaudePendingCount > 0` / `discussPendingCount > 0` / review-gui 顯示「🤖 等 Claude 接手」）。有 → 走 § 3a/3b/3c 處理 review items，**NEVER** 因為 impl blocked 就整條 change 跳過。人工檢查 lifecycle 獨立於 impl lifecycle。
 
-   **為什麼**（2026-07-21 <consumer-a> 實證）：`ops-deploy-safety` bucket=`applyBlocked`（4.1-4.3 卡 TD-002），但 review-gui 顯示「🤖 等 Claude 接手」有 1 個 Claude-actionable discuss item。loop 看到 `applyBlocked` 就整條跳過，review-gui 的 Claude-ball 永遠沒人接。
+   **為什麼**（2026-07-21 perno 實證）：`ops-deploy-safety` bucket=`applyBlocked`（4.1-4.3 卡 TD-002），但 review-gui 顯示「🤖 等 Claude 接手」有 1 個 Claude-actionable discuss item。loop 看到 `applyBlocked` 就整條跳過，review-gui 的 Claude-ball 永遠沒人接。
 
 ### 3j. awaitingUserDecision（自主解決優先，只有商業決策才問 user）
 
@@ -76,4 +76,4 @@ Local edits will be reverted by the next sync.
 
 **核心原則**：work-loop 的自主模式承諾「能自主決策的自主完成」。未實作的 phase、技術 findings、標準 spectra phases（Design Review / evidence collection）**全部屬於自主範疇**，NEVER 因為被標記 `awaitingUserDecision` 就當真 — 先判斷是否真的需要 user、還是上一輪 apply 過度保守地標記了。
 
-**反例（<consumer-b> 2026-07-21 `/change-loop turbo`）**：(1) 未實作的 phase 被標為 awaiting-user-decision → 應直接 dispatch apply；(2) 技術 findings（seed 歸屬 + UI wiring）被標為 blocker → 應自行修或登 TD；(3) Design Review 被標為「需排程」→ 應直接跑。三項全部可自主解決，loop 不應停下。
+**反例（TDMS 2026-07-21 `/change-loop turbo`）**：(1) 未實作的 phase 被標為 awaiting-user-decision → 應直接 dispatch apply；(2) 技術 findings（seed 歸屬 + UI wiring）被標為 blocker → 應自行修或登 TD；(3) Design Review 被標為「需排程」→ 應直接跑。三項全部可自主解決，loop 不應停下。

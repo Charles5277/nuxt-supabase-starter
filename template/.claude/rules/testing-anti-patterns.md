@@ -534,7 +534,7 @@ seedConversation({ updatedAt: daysAgo(60) })  // 更早
 
 **為什麼值得單獨列一條**：這是最難察覺的一類失效 —— 寫的當下全綠、review 時全綠、CI 連續數週全綠，然後在沒有任何人改動的情況下自己變紅。定位成本高（第一反應永遠是「誰動了什麼」，而答案是沒有人），而且會整批發作。
 
-實證（2026-07-28 <consumer-c>）：4 個 spec 的 seeded conversation 用 2026 年 4 月的固定日期，7 月起全部落入預設收合的「更早」bucket，sidebar 看不到對話 —— 單一 anti-pattern 造成 8 條失敗，且與同批其他 7 條無關的失敗混在一起，掩蓋了彼此的根因。
+實證（2026-07-28 nuxt-edge-agentic-rag）：4 個 spec 的 seeded conversation 用 2026 年 4 月的固定日期，7 月起全部落入預設收合的「更早」bucket，sidebar 看不到對話 —— 單一 anti-pattern 造成 8 條失敗，且與同批其他 7 條無關的失敗混在一起，掩蓋了彼此的根因。
 
 > 相關但不同：[[timezone]] 管的是「日期怎麼被格式化 / 存取」，本節管的是「fixture 的時間錨點怎麼選」。同一份 fixture 兩條都要過。
 
@@ -579,7 +579,7 @@ seedConversation({ updatedAt: daysAgo(60) })  // 更早
 
 **為什麼值得單獨列一條**：這類斷言的失效方式是**恆綠**，而綠燈正是它被信任的理由 —— 沒有人會對綠燈測試問「它會不會永遠綠」。註解寫得越忠實越危險：一段逐字引用運算式的說明，就是一份能永久滿足該斷言的複本。
 
-實證（2026-07-29 <consumer-a>）：staging-gate 回歸腳本斷言 `status != "completed"` 這個 jq filter 存在，但同一個 step 的註解解釋了這個 filter 並逐字引用它。把整段 `--jq` filter 刪成 `.workflow_runs[].head_sha`，測試照樣 PASS —— 被鎖住的是 production deploy gate 的 fail-fast 判準。詳見 [[pitfall-config-assertion-satisfied-by-own-comment]]。
+實證（2026-07-29 perno）：staging-gate 回歸腳本斷言 `status != "completed"` 這個 jq filter 存在，但同一個 step 的註解解釋了這個 filter 並逐字引用它。把整段 `--jq` filter 刪成 `.workflow_runs[].head_sha`，測試照樣 PASS —— 被鎖住的是 production deploy gate 的 fail-fast 判準。詳見 [[pitfall-config-assertion-satisfied-by-own-comment]]。
 
 ## Bug 診斷紀律：重現先於推理
 

@@ -238,7 +238,7 @@ manual-review.md 規定 item id 一律 `#N` / `#N.M`；本檔規定截圖檔名�
 
 ### Review evidence：`safe-screenshot.ts`（非破壞性，review/verify:ui 推薦入口）
 
-`screenshots/local/**` 是 **gitignored、無 git 歷史 / 無備份**。直接 `agent-browser screenshot <canonical>` 若拍出 blank / 錯頁，會**覆蓋掉**先前有效截圖且**永久遺失**（2026-06-24 <consumer-a> ehr-salary：一張空白 re-capture 砍掉有效 `#2` admin-list，無從還原）。加上 agent-browser daemon 會被 agent harness 在 tool-call 之間 reap → 跨 call 的 capture 各自 spawn 競爭 Chromium、撞 profile `SingletonLock` → Chrome abort → 整頁 blank。
+`screenshots/local/**` 是 **gitignored、無 git 歷史 / 無備份**。直接 `agent-browser screenshot <canonical>` 若拍出 blank / 錯頁，會**覆蓋掉**先前有效截圖且**永久遺失**（2026-06-24 perno ehr-salary：一張空白 re-capture 砍掉有效 `#2` admin-list，無從還原）。加上 agent-browser daemon 會被 agent harness 在 tool-call 之間 reap → 跨 call 的 capture 各自 spawn 競爭 Chromium、撞 profile `SingletonLock` → Chrome abort → 整頁 blank。
 
 因此 **review / verify:ui 的 canonical 截圖 MUST 走 `scripts/safe-screenshot.ts`（clade source `vendor/scripts/safe-screenshot.ts`），NEVER 對 canonical 路徑裸跑 `agent-browser screenshot`**：
 

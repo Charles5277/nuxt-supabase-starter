@@ -36,7 +36,7 @@ blocked / ambiguous 路由。
 
 **為什麼**：HANDOFF 條目通常用自然語言引用 change name（「完成 fix-pinia Phase 3」「A6 E2E 需要修」），
 不會寫死 `/spectra-apply fix-pinia`。靠字面路徑比對會漏掉這些 → 降級成 ad-hoc brief dispatch →
-spectra-apply 的 phase 結構、evidence 收集、verify cycle 全部丟失（2026-07 <consumer-a> 實證：A6 live E2E +
+spectra-apply 的 phase 結構、evidence 收集、verify cycle 全部丟失（2026-07 perno 實證：A6 live E2E +
 fix-pinia remaining phases 被分類為 code task / investigation → 深度不足 → user 必須停 loop 開
 focused spectra-apply session 手動推）。
 

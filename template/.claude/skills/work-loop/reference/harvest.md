@@ -59,7 +59,7 @@ ledger 移除照做、2h hang 上限照算。8 步 SOP 的 scope-verify / checke
 
 任一不成立 → 繼續 dispatch / 繼續等下一個 notification。
 
-### 實例（2026-07 <consumer-a> `/change-loop turbo`，本段落的由來）
+### 實例（2026-07 perno `/change-loop turbo`，本段落的由來）
 
 1. Loop dispatch 4 個 background agent：3 個 `/wt /spectra-apply` worktree（`admin-permission-gate-alignment` / `admin-dashboard-action-center` 等）+ 1 個 Fable dump script
 2. ❌ 不收割的行為：可 dispatch 的 item 都派完 → 主線寫 HANDOFF → 釋放 lock → 結束 loop

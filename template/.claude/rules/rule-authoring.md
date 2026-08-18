@@ -97,7 +97,7 @@ Consumer 主線字面遵守指令、不外推。規約意圖是「對**所有** 
 `paths:` 的 glob 錨在 **`.claude/` 的所在層**，不是 git repo root。這對**每一支**帶 `paths:` 的 rule 生效，不是只有動到 monorepo 的那幾支。三條硬規約：
 
 1. **NEVER 寫 `template/` 前綴**。template-based consumer（`nuxt-supabase-starter`）的投影落點是 `template/.claude/rules/`，它的 project root 就是 `template/` —— 寫 `server/**` 才命中，`template/server/**` 永不命中。
-2. **MUST 為每一條 source-tree top-level entry 配 `packages/*/<entry>` 變體**。monorepo consumer（<consumer-a> 等）的 `.claude/` 在 repo root，nested package 的檔案只有這個變體抓得到。source-tree top-level 的判定清單是 `scripts/audit-rule-paths-monorepo.ts` 的 `SOURCE_TREE_DIRS`。
+2. **MUST 為每一條 source-tree top-level entry 配 `packages/*/<entry>` 變體**。monorepo consumer（perno 等）的 `.claude/` 在 repo root，nested package 的檔案只有這個變體抓得到。source-tree top-level 的判定清單是 `scripts/audit-rule-paths-monorepo.ts` 的 `SOURCE_TREE_DIRS`。
 3. **NEVER 靠肉眼判這兩條**。`node scripts/audit-rule-paths-monorepo.ts` 是 SoT，`WARN` = 缺 monorepo 變體、`DEAD` = 寫了 `template/` 前綴。它已是 publish blocking gate。
 
 第 1 條 2026-08-04 用沙箱 + `InstructionsLoaded` hook 實測定案（TD-364）：從 `<repo>/template/` 開 session 讀 `server/api/probe.md`，`['server/**']` 載入、`['template/server/**']` 不載入，flow 與 list 兩種 YAML 語法同結果。**這條規約反轉了先前的做法** —— 2026-06-09 曾依舊版 audit 逐檔補過 33 條 `template/` 變體，那批連同後續長出的共 120 條已於本次全數移除。

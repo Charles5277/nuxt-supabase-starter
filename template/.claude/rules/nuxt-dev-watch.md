@@ -70,7 +70,7 @@ Local edits will be reverted by the next sync.
 - **NEVER** 刪 clade-managed baseline 5 條（投影層必排）
 - **NEVER** `vite.server.watch.ignored` 設值卻沒含 vite default 3 條
 - **NEVER** 在 consumer 自家追加自家 patterns 時刪 / 改 baseline section（自家加段 `// consumer-specific:` 之後追加，不動 baseline）
-- **NEVER** 假設 `nuxt --no-fork` / `concurrently` 包裝有關（已驗證跟 fd 用量正交，per 2026-05-28 <consumer-a> session）
+- **NEVER** 假設 `nuxt --no-fork` / `concurrently` 包裝有關（已驗證跟 fd 用量正交，per 2026-05-28 perno session）
 
 ## 為什麼這條 rule 存在
 

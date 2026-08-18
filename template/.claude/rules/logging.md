@@ -19,7 +19,7 @@ Local edits will be reverted by the next sync.
 
 # Logging
 
-evlog（https://www.evlog.dev/）是 wide-event-style structured logger。clade consumer fleet（名單以 registry/consumers.json 為準）以 Nuxt 為主、多數跑 Cloudflare Workers（<consumer-a> 為 node-server 變體，deploy-track 見 registry），本 rule 是其上 14 區塊功能的最低治理線。完整 adoption plan 見 `docs/evlog-master-plan.md`。
+evlog（https://www.evlog.dev/）是 wide-event-style structured logger。clade consumer fleet（名單以 registry/consumers.json 為準）以 Nuxt 為主、多數跑 Cloudflare Workers（perno 為 node-server 變體，deploy-track 見 registry），本 rule 是其上 14 區塊功能的最低治理線。完整 adoption plan 見 `docs/evlog-master-plan.md`。
 
 ## Logger 選擇
 

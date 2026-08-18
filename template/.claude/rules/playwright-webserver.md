@@ -123,8 +123,8 @@ time pnpm build     # 在**目標 runner 規格**上量，不是開發者機器
   這條邊界是會被跨過去的
 - 已經在跑 A 才發現超時 → 遷 B（見下方 § Fleet pattern 決策 的遷移方向說明）
 
-實證：<consumer-d> 2026-07-31 —— 自架 runner 上 E2E 逐層排除 runner / deps / Supabase port
-之後，最終卡在這條 fixture timeout；同 fleet 的 <consumer-b> 與 <consumer-a> 因為走 B（CI 先 build、playwright
+實證：yuntech-usr-sroi 2026-07-31 —— 自架 runner 上 E2E 逐層排除 runner / deps / Supabase port
+之後，最終卡在這條 fixture timeout；同 fleet 的 TDMS 與 perno 因為走 B（CI 先 build、playwright
 只 preview）而從未遇到。
 
 ### B. CI-conditional `nuxt preview --port`（合法替代，既有專案）
@@ -151,8 +151,8 @@ export default defineConfig({
 ```
 
 要點：CI 分支**不碰 dev script**、顯式帶 `--port`、`reuseExistingServer: !process.env.CI`。
-本地分支即使 fallback 到 dev server（如 <consumer-a> 的 `pnpm dev:<client-a>`）也安全 —— 因為 CI 不走
-那條。權威 ref：`~/offline/<consumer-b>/playwright.config.ts`、`~/offline/<consumer-a>/playwright.config.ts`。
+本地分支即使 fallback 到 dev server（如 perno 的 `pnpm dev:bigbyte`）也安全 —— 因為 CI 不走
+那條。權威 ref：`~/offline/TDMS/playwright.config.ts`、`~/offline/perno/playwright.config.ts`。
 
 ## Fleet pattern 決策（並存，不強制遷）
 
@@ -166,7 +166,7 @@ build 時間，不是主觀感覺。
 
 遷移三步（A → B）：
 
-1. CI workflow 加 build step（<consumer-b> 在 `ci.yml` 與 `e2e.yml` 各有一個；<consumer-a> 在 `e2e.yml`）
+1. CI workflow 加 build step（TDMS 在 `ci.yml` 與 `e2e.yml` 各有一個；perno 在 `e2e.yml`）
 2. `playwright.config.ts` 從 `use.nuxt` 改成 § B 的 `webServer` + `process.env.CI ?` 分支
 3. spec 從 `@nuxt/test-utils/playwright` 的 `{ page, goto }` fixture 改回 `@playwright/test`
    的 `page` + `baseURL`（B 不提供 `goto` fixture 與 `waitUntil: 'hydration'`）
@@ -174,7 +174,7 @@ build 時間，不是主觀感覺。
 第 3 步是 A→B 最容易漏的：兩者的 spec 匯入來源與可用 fixture**不同**，只改 config 會讓 spec
 在 import 層就掛掉。
 
-Workers runtime（如 <consumer-c> 用 `wrangler dev --local`）不適用本 pattern 表，
+Workers runtime（如 nuxt-edge-agentic-rag 用 `wrangler dev --local`）不適用本 pattern 表，
 但同一條 MUST 仍成立：webServer CI 路徑不可依賴本地 `.env` / creds。
 
 ## 自我檢查（寫 / 改 playwright config 時）

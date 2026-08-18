@@ -266,7 +266,7 @@ Cookbook 範本：`~/offline/clade/vendor/snippets/nuxt-data-perf/query-file-exa
 
 > **`use(Lazy)?` 前綴不可省**：`useLazyFetch` / `useLazyAsyncData` 字面上不含 `useFetch` / `useAsyncData`，regex 漏掉 `Lazy` 變體會把合規檔誤判為違規，逼開發者掛全檔 `data-perf-ignore-file` 豁免——該檔此後**所有**真違規都不再被偵測，gate 等於被自己掏空。
 
-> **為何 pre-push 是 warn-only**：既有 Nuxt consumer（如 <consumer-b>）通常有 30-50 個 `.vue` 檔只用 `$fetch`。全部阻擋會讓 push 完全停擺。等主要 consumer 逐步遷移到 composable 後 promote 為 blocking。
+> **為何 pre-push 是 warn-only**：既有 Nuxt consumer（如 TDMS）通常有 30-50 個 `.vue` 檔只用 `$fetch`。全部阻擋會讓 push 完全停擺。等主要 consumer 逐步遷移到 composable 後 promote 為 blocking。
 
 ### 合法例外（file-level ignore）
 
@@ -317,9 +317,9 @@ async function handleSubmit() {
 2026-06-23 跨 8 consumer 稽核發現：
 - `dedupe` 全 fleet = 0（MasteringNuxt tip 指出的盲區）
 - `getCachedData` 全 fleet = 0
-- 未安裝 Colada 的 consumer（<consumer-h> / <consumer-e> / blog）全面 D 級
-- 已安裝 Colada 的 consumer（<consumer-a> / <consumer-b> / sroi / agentic-rag）全部 B+ 以上，但 key management 和 dedupe 仍有缺口
-- <consumer-a> 的 pattern（STALE_TIME 三級 + key factory + 100% mutation invalidation）是 gold standard，需推廣
+- 未安裝 Colada 的 consumer（rental-scout / co-purchase / blog）全面 D 級
+- 已安裝 Colada 的 consumer（perno / TDMS / sroi / agentic-rag）全部 B+ 以上，但 key management 和 dedupe 仍有缺口
+- perno 的 pattern（STALE_TIME 三級 + key factory + 100% mutation invalidation）是 gold standard，需推廣
 
 ## 與其他 rule 的分工
 

@@ -158,7 +158,7 @@ ls ~/offline/<consumer>-wt/<change-slug>/ 2>/dev/null || git worktree list
 
 上一段管的是**讀**，它**不保證** main 上的改動比較舊 —— 在 main 補勾 checkbox 是常態。**NEVER** 把它外推成「main 端出現的 tasks.md 改動一律是退化副本」而 stash 掉；**MUST** 先用 `git diff HEAD`（含 staged）量打勾方向、再逐項比對打勾集合（**NEVER** 只比數量、**NEVER** 只看 `--stat`：`[ ]`→`[x]` 與反向給出完全相同的 insertions / deletions）。
 
-> 指令逐字、三種 predicate 的處置表、2026-08-11 <consumer-b> 實證詳見 [[worktree-default.troubleshooting]] §9.7.1 與 [[pitfall-main-side-tasks-md-tick-stashed-as-stale-copy]]。
+> 指令逐字、三種 predicate 的處置表、2026-08-11 TDMS 實證詳見 [[worktree-default.troubleshooting]] §9.7.1 與 [[pitfall-main-side-tasks-md-tick-stashed-as-stale-copy]]。
 
 ## §10 review-gui 與 worktree 互動的已知坑
 

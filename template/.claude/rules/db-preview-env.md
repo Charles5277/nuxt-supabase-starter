@@ -56,7 +56,7 @@ clade 規約管 capability，consumer 在 `registry/consumers.json` 宣告自家
 
 Fail-loud 的訊息 **MUST 點名 backing service 本身與修復指令**（例：`DB clone tdms_wt_<slug> 不存在 → node scripts/worktree-db.mjs create --slug <slug>`）。**NEVER** 只說「後端連線失敗」——那正是要避免的那層代言。
 
-**為什麼非綁在 dev server 啟動不可**：dev-session 這類 launcher 的成功判準通常是「port 有沒有 LISTENING」，而它對本問題**恆為真** —— app 起得來、只是打不到 DB。於是第一個發現異常的是瀏覽器，拿到的又是 app 為「後端暫時抖動」寫的 503/500 文案，完全指不到 DB。實測（<consumer-b> 2026-07-31）：修復只要兩個指令、數十秒，診斷卻花十幾輪，中途還跟兩個無關的 dev server 症狀混淆。**修復成本 ≈ 0，發現成本極高** —— 這個不對稱就是把檢查前移的全部理由。
+**為什麼非綁在 dev server 啟動不可**：dev-session 這類 launcher 的成功判準通常是「port 有沒有 LISTENING」，而它對本問題**恆為真** —— app 起得來、只是打不到 DB。於是第一個發現異常的是瀏覽器，拿到的又是 app 為「後端暫時抖動」寫的 503/500 文案，完全指不到 DB。實測（TDMS 2026-07-31）：修復只要兩個指令、數十秒，診斷卻花十幾輪，中途還跟兩個無關的 dev server 症狀混淆。**修復成本 ≈ 0，發現成本極高** —— 這個不對稱就是把檢查前移的全部理由。
 
 本證據決定：檢查該綁在哪個動作上（起 dev server，而非建 worktree）。
 本證據不決定：要不要做這個檢查——**NEVER** 拿「修復很便宜」當省略檢查的理由，便宜的是修復，貴的是發現。
@@ -125,14 +125,14 @@ Cookbook（naming / ownership / template refresh / path adapter / pool / cleanup
 
 **MUST** commit / PR 描述標出 migration 風險分類；reviewer **MUST** 對 `expand-contract` / `maintenance-required` 拍板才能 merge / tag。
 
-**現成自動化工具**：clade 已散播 `vendor/scripts/postgrest-migration-risk.mjs`（per-consumer 自動分類）+ `postgrest-ready-gate.mjs` + `postgrest-smoke.mjs`。consumer 可串 GitHub Actions `workflow_dispatch` input 把分類做成手動 gate — 範例：<consumer-b> `.github/workflows/ci.yml` `approve_high_risk_migration: choice` input。
+**現成自動化工具**：clade 已散播 `vendor/scripts/postgrest-migration-risk.mjs`（per-consumer 自動分類）+ `postgrest-ready-gate.mjs` + `postgrest-smoke.mjs`。consumer 可串 GitHub Actions `workflow_dispatch` input 把分類做成手動 gate — 範例：TDMS `.github/workflows/ci.yml` `approve_high_risk_migration: choice` input。
 
 ### 6. 主幹 deploy gate
 
 至少**兩條獨立 workflow**：一條 **PR-validation gate**（schema-migration-gate 即滿足），一條 **production deploy**（tag-triggered）。
 
 - **MUST** PR-validation gate 在 PR 階段跑，**NEVER** 用 shared staging 當 validation 環境
-- **MUST** production deploy 走 tag-trigger（tag pattern 由 consumer 自選 — `v*` 是 semver convention，`*` 也合法；<consumer-a> 用 `v*`、<consumer-b> 用 `*`）
+- **MUST** production deploy 走 tag-trigger（tag pattern 由 consumer 自選 — `v*` 是 semver convention，`*` 也合法；perno 用 `v*`、TDMS 用 `*`）
 - **MUST** production workflow 內有明確 confirm gate（環境變數 / GitHub environment protection / approval reviewer / `workflow_dispatch` approve input 都算）
 - **NEVER** 讓 PR / main push 直接打到 production
 - **NEVER** 把 production deploy 跟 PR-validation 寫在同一條 workflow 內共用 trigger
@@ -141,8 +141,8 @@ Cookbook（naming / ownership / template refresh / path adapter / pool / cleanup
 
 | Pattern | 適用 | 範例 consumer |
 | --- | --- | --- |
-| `main → staging` push + `tag → production` | 有 persistent staging LXC 作 merge 整合環境 | <consumer-a>（`<client-a>-<consumer-a>-staging` LXC）|
-| `PR → schema-migration-gate` + `tag → production`（trunk-based，無 staging）| 單 dev LXC + tag-driven prod | <consumer-b>（`fc-supabase-dev` 單 LXC）|
+| `main → staging` push + `tag → production` | 有 persistent staging LXC 作 merge 整合環境 | perno（`bigbyte-perno-staging` LXC）|
+| `PR → schema-migration-gate` + `tag → production`（trunk-based，無 staging）| 單 dev LXC + tag-driven prod | TDMS（`fc-supabase-dev` 單 LXC）|
 
 兩種 pattern 都滿足契約 — 重點是 PR 驗證**不**污染 shared writeable env。
 

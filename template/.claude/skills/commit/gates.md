@@ -234,7 +234,7 @@ git stash list --format='%gd %ct %gs' 2>/dev/null \
    # C: 減掉 parked change。`spectra park` 把 artifacts 從 disk 移進 SQLite blob，所以一個
    #    parked change 的整批檔案都會顯示成 deletion —— 那是 park 的預期副作用，不是 partial
    #    archive 殘骸。不減掉的話 gate 會對它報 MISSING_ARCHIVE_DIR，叫使用者去修一個從來
-   #    不存在的 archive（<consumer-a> 2026-07-31 實證：propose 收尾 commit-to-git 後 park，兩張
+   #    不存在的 archive（perno 2026-07-31 實證：propose 收尾 commit-to-git 後 park，兩張
    #    change 各 7 個檔全被判成殘骸）。
    PARKED=$(pnpm exec spectra list --parked --json 2>/dev/null \
      | sed -n 's/.*"name": *"\([^"]*\)".*/\1/p' | sort -u)
@@ -411,7 +411,7 @@ git stash list --format='%gd %ct %gs' 2>/dev/null \
 > | 「finding 都修完了，0-A.2 沒東西可看」 | 0-A.2 要看的正是那批修法。修完才是它的輸入齊備，不是它失去對象 |
 > | 「修法很小，不值得再跑一輪」 | 引入 regression 的修法通常都很小——大改動反而會被自己重讀 |
 >
-> 實證（<consumer-a> 2026-07-26）：0-A.1 的修法引入了一條 quota regression，正常使用者累積滿額後永久 429，由 0-A.2 的 Fable 裁決抓到。當時若因「finding 都修完了」跳過 0-A.2，會直接把功能壞掉的版本推上 production。
+> 實證（perno 2026-07-26）：0-A.1 的修法引入了一條 quota regression，正常使用者累積滿額後永久 429，由 0-A.2 的 Fable 裁決抓到。當時若因「finding 都修完了」跳過 0-A.2，會直接把功能壞掉的版本推上 production。
 
 **Severity 來源**：以 codex 自己輸出的 severity 標記為準（Critical / Major / Minor / Info）。**NEVER** 由主線自行判定降級「這個其實沒那麼嚴重」—— codex 標 Major 就照 Major 處理，否則 0-A.2 條件觸發機制等於形同虛設。
 
@@ -590,7 +590,7 @@ node .claude/scripts/0a-metrics.mjs record \
 pnpm check
 ```
 
-**同一次 commit 已經被 CI-only 失敗打回過第二次**時，別再逐發修——**MUST** 讀 `~/offline/clade/vendor/snippets/ci-parity/`，它有本機重現 CI 條件的 checklist 與兩個 consumer 的實際 churn 案例（<consumer-b> 曾為此連發六個修復 commit）。
+**同一次 commit 已經被 CI-only 失敗打回過第二次**時，別再逐發修——**MUST** 讀 `~/offline/clade/vendor/snippets/ci-parity/`，它有本機重現 CI 條件的 checklist 與兩個 consumer 的實際 churn 案例（TDMS 曾為此連發六個修復 commit）。
 
 **接著無條件跑一次測試**（多數 consumer 的 `check` 只有 format/lint/typecheck，**CI 才跑完整 test**，本地不補跑就會在 push 後才看到測試失敗）：
 
@@ -598,7 +598,7 @@ pnpm check
 pnpm test          # 或 vp test run / pnpm test:unit，依 consumer 設定
 ```
 
-**NEVER 先判斷 `pnpm check` 有沒有涵蓋 test 再決定跑不跑。** 本步驟原本用 `/test|vitest/.test(scripts.check)` 做這個判斷，比對的是整條 `&&` 串接命令的字串，於是任何**名字裡帶 `test`** 的 sibling script 都會誤觸——實測 <consumer-a> 的 `check:dual-test-config` / `check:e2e-paths` 與 <consumer-c> 的 `check:test-roots` 全部中招，三者都跟跑測試無關。誤觸 → 「必須額外跑」的條件不成立 → 補跑被跳過 → 0-C 在零測試覆蓋下判綠，且因為兩個分支都不 exit non-zero，判錯跟判對外觀完全一樣（<consumer-a> v0.103.0 實際踩到：兩條既有測試已紅，0-C 沒抓到）。
+**NEVER 先判斷 `pnpm check` 有沒有涵蓋 test 再決定跑不跑。** 本步驟原本用 `/test|vitest/.test(scripts.check)` 做這個判斷，比對的是整條 `&&` 串接命令的字串，於是任何**名字裡帶 `test`** 的 sibling script 都會誤觸——實測 perno 的 `check:dual-test-config` / `check:e2e-paths` 與 nuxt-edge-agentic-rag 的 `check:test-roots` 全部中招，三者都跟跑測試無關。誤觸 → 「必須額外跑」的條件不成立 → 補跑被跳過 → 0-C 在零測試覆蓋下判綠，且因為兩個分支都不 exit non-zero，判錯跟判對外觀完全一樣（perno v0.103.0 實際踩到：兩條既有測試已紅，0-C 沒抓到）。
 
 `check` 真的已含 test 時這裡會重跑一次；**重跑的成本遠低於靜默不跑**，且沒有啟發式就沒有判錯的可能。對應 [[pitfall-check-includes-test-substring-false-positive]]、TD-311。
 
@@ -649,7 +649,7 @@ Doctor health score < 100 或 exit code ≠ 0 → **MUST block commit**，修復
 node ~/offline/clade/vendor/scripts/codex-dispatch.ts \
   --template ~/offline/clade/vendor/snippets/codex-offload/templates/fix-verify-loop.template.md \
   --var <key>=<value> ...（依 template 變數表填：check 命令、失敗摘要 / log 等） \
-  --label commit-0c-<slug> --effort high \
+  --label commit-0c-<slug> --model sol --effort high \
   --route routing-table --tier-basis table-row --table-row commit-0c-fix-verify
 ```
 
@@ -831,7 +831,7 @@ npx evlog map --no-write --json 2>/dev/null \
 
 `zero-routes` → **不是滿分，是什麼都沒掃到**。CLI 這時會回報 score 100，那個 100 是假的。**MUST block commit**，除非 repo 內有有效的明文放行單（Step 3 的 gate 會自己判定，見下）。
 
-**Nuxt layer monorepo 的正解**（<consumer-a> 型：各 layer 有 `nuxt.config.ts` + `server/api/`，但沒有 `package.json`）—— `@evlog/cli` 靠 `package.json` 定位 project root，補上去就掃得到：
+**Nuxt layer monorepo 的正解**（perno 型：各 layer 有 `nuxt.config.ts` + `server/api/`，但沒有 `package.json`）—— `@evlog/cli` 靠 `package.json` 定位 project root，補上去就掃得到：
 
 ```bash
 # 1. 每個 layer 補一份 private package.json

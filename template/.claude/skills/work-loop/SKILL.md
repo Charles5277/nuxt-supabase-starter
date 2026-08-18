@@ -372,7 +372,7 @@ fi
 
 **`notes` 的型別是 string，寫入方式是改寫、不是累加。** 它存的**只有**「下一輪仍然成立的 sandbox / 環境事實」——無外網、某個 CLI 缺 binary、某條路徑在本機解不到。每一輪都是把整段**重寫**成當下仍成立的版本：已經不成立的句子刪掉，新的事實寫進同一段散文。
 
-- **NEVER 把 `notes` 寫成 object**，也 **NEVER** 在它底下開 `notes.r<N>` / `notes.round42` 這類逐輪 key。實測（2026-08-12 round 59，<consumer-a> round=38）：object 型 `notes` 長到 **27787 B**，佔該 runtime 三個累積欄位的 88%；同期兩個 string 型 runtime 停在 1.3–1.7 KB，而其中一家的輪數還更高——驅動因素是**型別**不是輪數。object 形態讓「每輪 append 一個新 key」變成最省事的寫法，string 形態逼人改寫既有句子。
+- **NEVER 把 `notes` 寫成 object**，也 **NEVER** 在它底下開 `notes.r<N>` / `notes.round42` 這類逐輪 key。實測（2026-08-12 round 59，perno round=38）：object 型 `notes` 長到 **27787 B**，佔該 runtime 三個累積欄位的 88%；同期兩個 string 型 runtime 停在 1.3–1.7 KB，而其中一家的輪數還更高——驅動因素是**型別**不是輪數。object 形態讓「每輪 append 一個新 key」變成最省事的寫法，string 形態逼人改寫既有句子。
 - **NEVER 拿 `notes` 記本輪發生過什麼**——那是 `sessionNote` 的職責，且它有 retention 接住。事件記進 `notes` 就永遠不會有人來刪，因為讀者分不出哪一條還成立。
 - **NEVER 記進 `notes` 留給下一輪處理**：本輪看到的收斂義務（§ Retention 的 `STATE_OVERSIZE`）**當輪**就要做掉。
 
@@ -419,9 +419,9 @@ state.json 每輪被**整讀**一次，所以它的體積是一筆與本輪成�
 
 觸發訊號只有一個：`guardrailsAck` 讀不到。
 
-> **2026-08-13 TD-495 起，「`round` 與 HANDOFF 記載輪次不一致」不再是訊號。** HANDOFF 不再 render loop 進度（Step 7.2），第二份現況不存在了，也就沒有「兩邊不一致」這回事。真正的停滯由 `runner.sh` 的 no-progress 網接（`exit=0 且 round 未前進` 連續 2 輪 → 自行停）。**NEVER** 為了恢復這個訊號把進度寫回 HANDOFF —— 兩份現況正是 2026-08-11 <consumer-b> 空轉近 7 小時的根因。
+> **2026-08-13 TD-495 起，「`round` 與 HANDOFF 記載輪次不一致」不再是訊號。** HANDOFF 不再 render loop 進度（Step 7.2），第二份現況不存在了，也就沒有「兩邊不一致」這回事。真正的停滯由 `runner.sh` 的 no-progress 網接（`exit=0 且 round 未前進` 連續 2 輪 → 自行停）。**NEVER** 為了恢復這個訊號把進度寫回 HANDOFF —— 兩份現況正是 2026-08-11 TDMS 空轉近 7 小時的根因。
 
-**這個訊號在 runner child 身上永遠不代表 decay。** decay 指的是**同一個 process 的 context 被 auto-compaction 壓掉**——只有 in-session `/loop` 有這個失敗模式。runner child 每輪是 `claude --print` 起的**全新 process**，context 從零重建、狀態只從 state 檔讀，結構上不可能 decay。所以在 child 身上，訊號命中**一定**是「上一輪 bookkeeping 沒收尾」，而那需要的是**自癒或忽略**，不是中止。無條件中止會讓**每一輪**都在 Step 1 停住、零 scan 零 dispatch，直到 runner 的 no-progress 條件把自己停掉——而那個停法在 log 上跟正常收工幾乎無法區分（2026-08-11 <consumer-b> 實測：連續空轉近 7 小時，所有健康訊號正常，靠人工介入才發現）。
+**這個訊號在 runner child 身上永遠不代表 decay。** decay 指的是**同一個 process 的 context 被 auto-compaction 壓掉**——只有 in-session `/loop` 有這個失敗模式。runner child 每輪是 `claude --print` 起的**全新 process**，context 從零重建、狀態只從 state 檔讀，結構上不可能 decay。所以在 child 身上，訊號命中**一定**是「上一輪 bookkeeping 沒收尾」，而那需要的是**自癒或忽略**，不是中止。無條件中止會讓**每一輪**都在 Step 1 停住、零 scan 零 dispatch，直到 runner 的 no-progress 條件把自己停掉——而那個停法在 log 上跟正常收工幾乎無法區分（2026-08-11 TDMS 實測：連續空轉近 7 小時，所有健康訊號正常，靠人工介入才發現）。
 
 **MUST** 依下表分流，**每一列**都要照著判，不是只看第一列：
 
@@ -512,7 +512,7 @@ context-decay 與 handoff-write-failed **永遠**寫 `roundEndReason`，**NEVER*
 Foreground 路徑**不**寫 `inFlight`、不建 background task、也不 arm keepalive：結果已在同一 tool call
 回來，沒有未來 notification 可收割。**NEVER** 在 runner child 對 decision-linked dispatch 使用
 `run_in_background=true`——`claude --print` 回覆後 process 退出，background task ownership 隨之消失；
-2026-08-14 <consumer-a> round 46 的 log 只留下 `task ba6yk67mk`，state 停在 round 45。
+2026-08-14 perno round 46 的 log 只留下 `task ba6yk67mk`，state 停在 round 45。
 
 ---
 
@@ -545,7 +545,7 @@ helper 在單一 Node process 內完成 handoff-scan → repo-local 同目錄 te
 | `handoff` / `techdebt` / `roadmap` | `HANDOFF.md` 待辦段、`techDebtHygiene.raw`、`openspec/ROADMAP.md` | § 3.1b 分類表 |
 
 - **`HANDOFF.md`** —— 掃 `## In Progress` / `## Blocked` / `## Next Steps` / `## Outstanding` / `## Follow-up`（heading 名因 consumer 而異，靠 `##` / `###` 辨識）。`- [ ]` 未勾項 = 一個 candidate；`- [x]` 跳過；純文字段落視為單一 candidate
-- **`docs/tech-debt.md`** —— **NEVER 整讀主檔**（2026-08-06 實測 clade 196KB / <consumer-b> 363KB，整讀一次吃掉大半預算）。從 `techDebtHygiene.raw` 取，優先序**四層**：`landed-pending-verification`（驗收）→ `stale`（>60d）→ `aging`（>14d）→ 其他 `open`。需要細節時用 `raw` 的 `lineNo` **定點 Read**（`offset` + `limit`）
+- **`docs/tech-debt.md`** —— **NEVER 整讀主檔**（2026-08-06 實測 clade 196KB / TDMS 363KB，整讀一次吃掉大半預算）。從 `techDebtHygiene.raw` 取，優先序**四層**：`landed-pending-verification`（驗收）→ `stale`（>60d）→ `aging`（>14d）→ 其他 `open`。需要細節時用 `raw` 的 `lineNo` **定點 Read**（`offset` + `limit`）
 
   **驗收排第一層不是偏好，是流量算術**：landed 條目的 Resolution 已經寫好，close 它的成本是「跑一次自驗」；開一條新 TD 的成本也差不多，但方向相反。驗收永遠排在新工作後面的迴圈，close 流量必定輸給 open 流量——2026-08-13 clade 實測近 7 天 opened 39 / closed 10，同期 landed 桶 16 條無一驗收。**NEVER** 把「landed 那條反正已經 land 了」讀成它不急：它佔著 open class 的位置，且它的 Resolution 每多放一天就多一分過期風險。
 
@@ -666,7 +666,7 @@ ELSE:
   → 走原 bucket routing
 ```
 
-**`bucket=ready` 不等於 user-bound；`bucket=applyBlocked` 不等於 Claude 無事可做**（impl 卡 blocker ≠ review items 也卡）。2026-07-21 <consumer-a> 實證：5 個 issued items 被 `ready` bucket 掩蓋，loop 宣告 user-bound 然後 30min idle，user 在 review-gui 等一個不會來的接手。**「所有 change 卡 user action」這句話在 `issued>0` 時就是錯誤判斷。**
+**`bucket=ready` 不等於 user-bound；`bucket=applyBlocked` 不等於 Claude 無事可做**（impl 卡 blocker ≠ review items 也卡）。2026-07-21 perno 實證：5 個 issued items 被 `ready` bucket 掩蓋，loop 宣告 user-bound 然後 30min idle，user 在 review-gui 等一個不會來的接手。**「所有 change 卡 user action」這句話在 `issued>0` 時就是錯誤判斷。**
 
 ### 3.1b 非 spectra source — 分類表
 
@@ -932,7 +932,7 @@ patch 語義：**給值＝覆蓋、給 `null`＝刪除、沒提到＝原值不�
 
 **看到 `STATE_WRITE_FAILED` / `STATE_BACKUP_FAILED` / `STATE_ROUND_REGRESS` / `STATE_CORRUPT_REFUSED` MUST 立刻停止本輪 bookkeeping**（`STATE_OK` 以外的每一個都是）：四者都保證正本仍是上一輪的完好版本，照 7.2 Iron Law 的無害方向倒（`state.round` < HANDOFF，下一輪冪等重做）。`STATE_BACKUP_FAILED` 額外意味著磁碟或權限有問題，**MUST** 在 `sessionNote` 記一筆再重試。**NEVER** 因為「內容應該沒問題」跳過驗證，也 **NEVER** 在失敗後改用直接覆寫繞過。
 
-**`.bak` 只保留上一輪的完好版本，NEVER 累積多份帶時間戳的副本**——救援時要能一眼看出該還原哪一個。且 **NEVER 把寫壞的檔存成 `.bak-<ts>`**：那個名字會讓還原程序把屍體當備份撿起來（2026-08-12 <consumer-b> 實際留過一份，已改名 `state.json.corrupt-<ts>`）。
+**`.bak` 只保留上一輪的完好版本，NEVER 累積多份帶時間戳的副本**——救援時要能一眼看出該還原哪一個。且 **NEVER 把寫壞的檔存成 `.bak-<ts>`**：那個名字會讓還原程序把屍體當備份撿起來（2026-08-12 TDMS 實際留過一份，已改名 `state.json.corrupt-<ts>`）。
 
 寫完 **MUST** 跑 `node ~/offline/clade/vendor/scripts/work-loop-lock.ts refresh --session <lockSessionId>`。鎖的 heartbeat 只在 Step 1 / Step 5 / 本步被刷，漏掉一次就讓還在跑的這一輪被下一輪判成死掉並接手——失敗長相是兩個 loop 同時跑、state 互相覆寫，沒有任何錯誤訊號。
 

@@ -75,7 +75,7 @@ assertion-bearing `[verify:ui]` item（要驗「某具體內容有出現」而�
 - **純主觀視覺**（spacing / 配色 / visual balance /「好不好看」）→ reclassify `[review:ui]`，user 親驗（見 `manual-review.evidence.md` § `[review:ui]` 收斂原則）。
 - **需要互動才出現的狀態**（click / submit / multi-role 才能到的畫面）→ 該斷言屬 `[verify:e2e]` / `[verify:api]`，不是 final-state screenshot 能驗。
 
-**為什麼**：<consumer-b> `monitoring-slot-suggested-life-and-cleanup`（2026-05-30）—— `[verify:ui]` item 驗「建議刀位壽命 inline 顯示 143 秒」，但該頁逐列建議值來自 async query，在 `wait_for_load()` **之後**才填；screenshot agent load 後立刻拍 → 拍到只有「0 秒 / 1,000 秒」的空殼，evidence 失真、user 無法作業。根因是「capture 前要等什麼」沒被宣告成機械可判 signal，agent 只能 `wait_for_load()` 後盲拍。把 `ready_signal` 變 item 契約 = agent 有明確 poll 目標、拍到真 final state。
+**為什麼**：TDMS `monitoring-slot-suggested-life-and-cleanup`（2026-05-30）—— `[verify:ui]` item 驗「建議刀位壽命 inline 顯示 143 秒」，但該頁逐列建議值來自 async query，在 `wait_for_load()` **之後**才填；screenshot agent load 後立刻拍 → 拍到只有「0 秒 / 1,000 秒」的空殼，evidence 失真、user 無法作業。根因是「capture 前要等什麼」沒被宣告成機械可判 signal，agent 只能 `wait_for_load()` 後盲拍。把 `ready_signal` 變 item 契約 = agent 有明確 poll 目標、拍到真 final state。
 
 ### 適用範圍
 
@@ -105,8 +105,8 @@ assertion-bearing `[verify:ui]` item（要驗「某具體內容有出現」而�
 
 1. **明確 URL** — 寫出要打開的具體頁面（含必要 query string / route param），不要只說「kiosk 頁」「dashboard」「設定頁」。**Host 部分 MUST 優先用 consumer 的 Cloudflare tunnel hostname**：
    - 該 consumer 對應 `.env*` 有 `TUNNEL_HOSTNAME=<host>` → 寫 `https://<host>/<path>`（HTTPS / 真實 cookie domain / 跨裝置可開；webauthn / OAuth callback / camera permission 等 HTTPS-only feature 也只能用 tunnel 驗）
-   - 沒設 `TUNNEL_HOSTNAME`（如 `<consumer-d>`）→ fallback `http://localhost:<port>/<path>`，`<port>` 取自 `registry/consumers.json` 的 `dev_ports.nuxt`
-   - Multi-app consumer（如 <consumer-a>: <client-a> 3040 / shared 3045）→ 依 change 觸碰的 app 反推 `.env.<app>` 找對應 `TUNNEL_HOSTNAME`；找不到 app hint **MUST** 在 propose 階段問清楚，不要靜默挑一個
+   - 沒設 `TUNNEL_HOSTNAME`（如 `yuntech-usr-sroi`）→ fallback `http://localhost:<port>/<path>`，`<port>` 取自 `registry/consumers.json` 的 `dev_ports.nuxt`
+   - Multi-app consumer（如 perno: bigbyte 3040 / shared 3045）→ 依 change 觸碰的 app 反推 `.env.<app>` 找對應 `TUNNEL_HOSTNAME`；找不到 app hint **MUST** 在 propose 階段問清楚，不要靜默挑一個
    - 完整解析 SOP、反向 mapping 演算法、fallback decision table、tunnel lifecycle 規約：見 `~/offline/clade/vendor/snippets/tunnel-url-for-review/README.md`（cookbook 只在 clade home，agent 從絕對 path 讀）
    - **NEVER** 在同一 item 同時列 tunnel URL 跟 localhost URL（「試試這個或那個」），擇一寫即可
 2. **逐步動作 sub-items** — 用 `#N.M` scoped 拆，每條 sub-item 一個原子動作（開 X → 輸入 Y / 點 Z → 確認 W）。**禁止**流程式描述（例「刷卡 → 進入毛刺 → 操作完成 → 自動回 standby」整條塞在 parent line）
@@ -117,25 +117,25 @@ assertion-bearing `[verify:ui]` item（要驗「某具體內容有出現」而�
 
 該 consumer 有設 `TUNNEL_HOSTNAME` 卻在 item 寫 `http://localhost:<port>`：違反通則 § 1，user 開不了（手機 / iPad / 別台電腦無 localhost）、HTTPS-only feature（OAuth / WebAuthn / camera permission / `SameSite=None` cookie）也驗不到。`UI_URL_LOCALHOST_WITH_TUNNEL_AVAILABLE` audit pattern 會命中。
 
-❌ 不夠（<consumer-b> `.env.local` 有 `TUNNEL_HOSTNAME=tdms-dev.<maintainer-domain>` 卻寫 localhost）：
+❌ 不夠（TDMS `.env.local` 有 `TUNNEL_HOSTNAME=tdms-dev.yudefine.com.tw` 卻寫 localhost）：
 
 ```markdown
 - [ ] #2 [verify:ui] 首頁 `http://localhost:3000/?machine=9001` 監控表格 inline 顯示建議壽命與 info icon
-  - [ ] #2.1 [verify:ui] 以 admin session 開 `http://localhost:3000/?machine=9001`，normal table 中 `<consumer-b>-SEED-SUGGESTED-LIFE-HEAD-IQM-001` 這列的「壽命狀態」欄位同時顯示既有本輪壽命資訊與建議壽命 `143 秒`。
+  - [ ] #2.1 [verify:ui] 以 admin session 開 `http://localhost:3000/?machine=9001`，normal table 中 `TDMS-SEED-SUGGESTED-LIFE-HEAD-IQM-001` 這列的「壽命狀態」欄位同時顯示既有本輪壽命資訊與建議壽命 `143 秒`。
 ```
 
 ✅ 好（改用 tunnel host，保留原 path + query string）：
 
 ```markdown
-- [ ] #2 [verify:ui] 首頁 `https://tdms-dev.<maintainer-domain>/?machine=9001` 監控表格 inline 顯示建議壽命與 info icon
-  - [ ] #2.1 [verify:ui] 以 admin session 開 `https://tdms-dev.<maintainer-domain>/?machine=9001`，normal table 中 `<consumer-b>-SEED-SUGGESTED-LIFE-HEAD-IQM-001` 這列的「壽命狀態」欄位同時顯示既有本輪壽命資訊與建議壽命 `143 秒`。
+- [ ] #2 [verify:ui] 首頁 `https://tdms-dev.yudefine.com.tw/?machine=9001` 監控表格 inline 顯示建議壽命與 info icon
+  - [ ] #2.1 [verify:ui] 以 admin session 開 `https://tdms-dev.yudefine.com.tw/?machine=9001`，normal table 中 `TDMS-SEED-SUGGESTED-LIFE-HEAD-IQM-001` 這列的「壽命狀態」欄位同時顯示既有本輪壽命資訊與建議壽命 `143 秒`。
 ```
 
 判斷準則（寫前自問）：
 
 - 「我寫 URL 前有沒有先 grep 該 consumer `.env*` 找 `TUNNEL_HOSTNAME`？」否 → 補做，依結果決定 host
-- Multi-app consumer（<consumer-a>: <client-a> 3040 / shared 3045）→ 依 change 觸碰的 app 反推 `.env.<app>`；無 app hint 在 propose 階段就問清楚
-- 該 consumer 真的沒設 tunnel（如 `<consumer-d>`）→ fallback `http://localhost:<port>/<path>` 是合法的；hook 會自動 suppress 此 pattern 不 fire
+- Multi-app consumer（perno: bigbyte 3040 / shared 3045）→ 依 change 觸碰的 app 反推 `.env.<app>`；無 app hint 在 propose 階段就問清楚
+- 該 consumer 真的沒設 tunnel（如 `yuntech-usr-sroi`）→ fallback `http://localhost:<port>/<path>` 是合法的；hook 會自動 suppress 此 pattern 不 fire
 - 完整解析 SOP、反向 mapping、fallback decision table：`~/offline/clade/vendor/snippets/tunnel-url-for-review/README.md`
 
 ### 反例：multi-card UI selector

@@ -49,7 +49,7 @@ Implement tasks from a Spectra change.
 
    c.5. **Main-side unpark + commit-to-git**（clade fork addition；critical data-safety guardrail，per `docs/pitfalls/2026-05-22-agent-tool-subagent-worktree-bypass.md`）：
 
-      **理由**：spectra v3 `spectra park` 把 artifacts 從 disk 搬進 `.git/spectra-app/spectra.db` SQLite blob（**不在 git tracked file**）；後續 `spectra unpark` 會 restore artifacts 到 cwd 的 worktree disk 並把 SQLite parked 條目刪除。若 unpark 在 Claude Code `Agent` tool dispatched subagent 的 ephemeral cwd（`.claude/worktrees/agent-*/`，session 結束 GC）跑 → artifacts 寫進去就被 GC 清掉、SQLite 也沒了 → **永久遺失**（<consumer-e> 已撞，99 tasks + 5 specs + proposal 蒸發）。
+      **理由**：spectra v3 `spectra park` 把 artifacts 從 disk 搬進 `.git/spectra-app/spectra.db` SQLite blob（**不在 git tracked file**）；後續 `spectra unpark` 會 restore artifacts 到 cwd 的 worktree disk 並把 SQLite parked 條目刪除。若 unpark 在 Claude Code `Agent` tool dispatched subagent 的 ephemeral cwd（`.claude/worktrees/agent-*/`，session 結束 GC）跑 → artifacts 寫進去就被 GC 清掉、SQLite 也沒了 → **永久遺失**（co-purchase 已撞，99 tasks + 5 specs + proposal 蒸發）。
 
       因此 **MUST** 在 dispatch subagent **之前**，由主線在 main worktree（**或** Step 0c 剛 fork 出的 session worktree — 兩者都是 persistent disk，非 ephemeral）跑 unpark + commit-to-git，artifacts 落 git tracked file，subagent fork 出去後天然帶過、不再依賴 SQLite blob。
 
@@ -634,7 +634,7 @@ If there is no AskUserQuestion tool available, present options as plain text and
 
 8a.6. **Pre-Manual-Review Self-Analysis** (clade fork addition — Layer E.1 of pre-handoff quality gates; not in upstream spectra)
 
-   The user must not be the **first** to discover trivial UX/data defects in the GUI. <consumer-a> `app-status-badge-extraction`（2026-05-24）handed 9 fabricated `(verified-ui:)` annotations + an all-「-」員工 column straight to the user because nothing between Step 8a and the GUI re-checked the change. Step 8a.6 is that re-check.
+   The user must not be the **first** to discover trivial UX/data defects in the GUI. perno `app-status-badge-extraction`（2026-05-24）handed 9 fabricated `(verified-ui:)` annotations + an all-「-」員工 column straight to the user because nothing between Step 8a and the GUI re-checked the change. Step 8a.6 is that re-check.
 
    **Model allocation**（收集與判定是兩個角色，各自一個檔位；**NEVER** 合寫成一句）：
 

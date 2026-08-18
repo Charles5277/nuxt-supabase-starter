@@ -100,14 +100,14 @@ bump_err() { # $1 = context, $2 = raw output
 if [[ "$MODE" == "workflow" ]]; then
   # gh run list -c 只認**完整 40 碼 SHA**：傳縮寫 SHA 會靜默回空陣列（rc=0、不報錯），
   # 於是上面「查無 run = pending 繼續等」的設計把它當成 run 尚未建立，一路等到
-  # WATCH_TIMEOUT。2026-07-31 <consumer-a> 實證：`--commit e1738305`（8 碼）等滿 3600s 回
+  # WATCH_TIMEOUT。2026-07-31 perno 實證：`--commit e1738305`（8 碼）等滿 3600s 回
   # run=unresolved，同一條 run 換完整 SHA 立刻查得到、而且早在 watcher 啟動後一分鐘
   # 內就 success。展不開就 fail fast，NEVER 讓 caller 白等一小時。
   # --tag 是 post-push 場景的正解：發版 tag 是**不可變的 ref**，指向你剛推的那個 commit。
   # 對照組 `--commit "$(git rev-parse HEAD)"` 在 dispatch 當下才解析 HEAD——多 session 共用
   # main 時，push 與派 watcher 之間別的 session 可能已經推了新 commit，HEAD 早就不是你的
   # 發版 commit 了，watcher 於是盯著一個沒有任何 run 的 SHA 等滿 TIMEOUT
-  # （2026-08-02 <consumer-b> v1.258.0 實證：HEAD 已前進 2 個 commit，gh run list -c 回空陣列）。
+  # （2026-08-02 TDMS v1.258.0 實證：HEAD 已前進 2 個 commit，gh run list -c 回空陣列）。
   if [[ -n "$TAG" ]]; then
     if [[ -n "$COMMIT" ]]; then
       echo "RESULT: UNAVAILABLE (--tag 與 --commit 互斥，兩者都指定目標 commit)"
@@ -134,7 +134,7 @@ if [[ "$MODE" == "workflow" ]]; then
   # --commit 模式：SHA 本身已唯一識別 run，不疊 createdAt 下界 —— caller 常見模式是
   # 「push 完才派 watcher」，run 早於 script 啟動時間建立，若仍套用預設 120s-ago 下界
   # 會把已存在的 run 過濾掉，watcher 誤判「run 尚未建立」永遠 pending 到 WATCH_TIMEOUT
-  # （2026-07-28 <consumer-b> v1.252.9 實證：run 建立於 20:05:57Z，SINCE=20:06:01Z，晚 4 秒即被擋）。
+  # （2026-07-28 TDMS v1.252.9 實證：run 建立於 20:05:57Z，SINCE=20:06:01Z，晚 4 秒即被擋）。
   # --since 顯式傳入時仍尊重使用者指定值；--branch 或無 commit 的模式維持既有時間窗。
   if [[ -z "$SINCE" ]]; then
     if [[ -n "$COMMIT" ]]; then

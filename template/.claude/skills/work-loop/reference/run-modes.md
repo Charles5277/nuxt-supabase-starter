@@ -55,7 +55,7 @@ runner 在跑第一輪之前先過 quarantine gate 與兩道環境門，任一�
 
 headless 探針要付一次小的 `claude --print` 呼叫，並以顯式 `--preflight` 加 runner 未知 nonce
 **實際執行同一支 helper**（含 scanner syntax check、但不寫 scan；helper 以 nonce proof marker
-回寫 repo-local 路徑，runner 驗證後立即刪除），換掉的是**整個 run**：2026-08-10 <consumer-b> 因
+回寫 repo-local 路徑，runner 驗證後立即刪除），換掉的是**整個 run**：2026-08-10 TDMS 因
 harness 權限閘門連續拒絕，空轉 99 輪、零待辦被修改。child `exit=0` 仍不構成成功；只有
 repo-local nonce proof marker 的內容逐字匹配 runner 產生的 nonce 才通過。helper stdout（包含任何
 token 或路徑）僅供診斷，不是 proof；只用 `[ -f ]` 看檔案存在會漏掉 script 無法執行或 scanner parse 失敗。
@@ -180,7 +180,7 @@ message 的投遞繞過 permission-class hold，且 Linux 連已退出的 child 
 
 ## 工具健檢為什麼要實跑（Step 2.5 的兩段實證）
 
-**為什麼是實跑**：2026-08-05 <consumer-a> 實證——`scripts/lib/detect-runtime.ts` 從未被散播，四支入口
+**為什麼是實跑**：2026-08-05 perno 實證——`scripts/lib/detect-runtime.ts` 從未被散播，四支入口
 （`dev-session` / `dev-singleton` / `db-lease` / `claims-lib`）全部 `ERR_MODULE_NOT_FOUND`。
 **那四支檔案本身都在**，`[ -f ]` 一路綠燈；死的是它們 import 的東西。該輪因此白派了一個 worktree
 agent 出去，回來才知道 dev-port 組整組不可用。

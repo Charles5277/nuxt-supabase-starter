@@ -29,7 +29,7 @@ Local edits will be reverted by the next sync.
 12. **每條停止路徑 MUST 跑 `work-loop-lock.ts release --session <id>`** —— 含失敗提早結束的路徑。**NEVER** 改用 Write tool 或 `rm` 直接動 `.clade/work-loop/lock`（per Step 0 § 互斥鎖 Iron Law）
 13. **Blocked / Decision item 先評估再處理** —— `applyBlocked` 走 blocker 鮮度判定、`awaitingUserDecision` 先嘗試自主解決（技術決策自決，只有商業決策才是真的 user-bound）。兩者都**不是**「永遠跳過」。見 `blocker-evaluation.md`
 14. **NEVER 因 size / progress 跳過 dispatch** —— `applyInProgress` 不管進度 0% 或 change 看起來多大，MUST dispatch；`/spectra-apply` 自管步驟粒度、phase、pause 與 blocker。「需要完整 session」「不適合 loop」= 違反本條
-15. **Bucket ≠ ball ownership** —— `bucket=ready` 不等於 user-bound，`bucket=applyBlocked` 不等於 Claude 無事可做。**MUST** 在每條 change 的 bucket routing 後檢查 `issued` / `verifyClaudePendingCount` / `discussPendingCount` / `staleEvidenceCount`，任一 > 0 = 仍有工作。實證（2026-07-21 <consumer-a>）：bucket=`ready` + issued=5 → loop 宣告 user-bound + 30min idle，user 在 review-gui 等一個不會來的接手。**「所有 change 卡 user action」這句話在 `issued>0` 時就是錯誤判斷**
+15. **Bucket ≠ ball ownership** —— `bucket=ready` 不等於 user-bound，`bucket=applyBlocked` 不等於 Claude 無事可做。**MUST** 在每條 change 的 bucket routing 後檢查 `issued` / `verifyClaudePendingCount` / `discussPendingCount` / `staleEvidenceCount`，任一 > 0 = 仍有工作。實證（2026-07-21 perno）：bucket=`ready` + issued=5 → loop 宣告 user-bound + 30min idle，user 在 review-gui 等一個不會來的接手。**「所有 change 卡 user action」這句話在 `issued>0` 時就是錯誤判斷**
 16. **重複 invocation safe（三層）** —— 已 shipped 的 item 不出現在 scan；in-flight item 由 Step 2 的 claim 鮮度 filter 排除；整輪重疊由 Step 0 互斥鎖擋。**三層合起來才算 idempotent**——只靠「shipped 不再出現」不夠
 
 ### 護欄 7 的 decisions carve-out（2026-08-12 Charles 拍板）

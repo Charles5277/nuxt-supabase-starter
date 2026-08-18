@@ -82,7 +82,7 @@ path scope 含 `openspec/changes/**/{proposal,design,design-review}.md`，**不�
 
 API surface 規約只擋「props/slots/API 名亂湊」，但**不擋**「多條合法 fact 合成成 prescriptive pattern claim」。例如：MCP 告訴你 `placeholder` prop 存在 + `modelValue` 型別接受 `null` + clear 按鈕 reset 成 `null`。三條 fact 都來自 MCP。但你**不能**把它們 synth 成「Nuxt UI 規範 pattern 是 placeholder + null sentinel」——這個「pattern」claim MCP 從未明文背書。
 
-實證：2026-05-24 <consumer-a> `app-status-badge-extraction` session，主線 Claude 用上述 synth 推論替「用 placeholder + null 取代 empty-string item value」這個修法背書，被 user 標為**重大錯誤**。Synth pattern 標上「官方」「規範」label 等於把推論偽裝成 authority。
+實證：2026-05-24 perno `app-status-badge-extraction` session，主線 Claude 用上述 synth 推論替「用 placeholder + null 取代 empty-string item value」這個修法背書，被 user 標為**重大錯誤**。Synth pattern 標上「官方」「規範」label 等於把推論偽裝成 authority。
 
 ### 判別自查
 
