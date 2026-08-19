@@ -39,7 +39,7 @@
 // Why a preset (not inline rule duplication):
 //   `rules/core/code-style.md` § MUST documents these fields as required, but
 //   text-only governance does not lock structure — 5 consumers had drifted
-//   (trailingComma 'es5' vs 'all', missing categories/plugins on sroi, etc.).
+//   (trailingComma 'es5' vs 'all', missing categories/plugins on <consumer-d>, etc.).
 //   This preset turns the rule into an importable artifact; changing the
 //   baseline = edit this file in clade + propagate.
 
@@ -53,7 +53,7 @@
  *
  * 2026-07-28: that is exactly how `nuxt-supabase-starter` Template CI broke on
  * `vp fmt --check` over `vendor/snippets/manual-review-enforcement/patterns.json`
- * — <consumer-h> and <consumer-e> had each independently patched `vendor/**`
+ * — <consumer-i> and <consumer-h> had each independently patched `vendor/**`
  * into their own vite.config.ts, which hid the gap instead of closing it.
  * `scripts/audit-governance-drift.ts` check 10 now fails on any config that
  * re-inlines one of these, so the next gap surfaces before a consumer does.
@@ -105,7 +105,7 @@ export const lintBase = {
     // Explicit pin keeps `_serviceClient` / fixture private prefix conventions
     // from breaking CI lint gate on lockfile regen. `allow` covers:
     //   __dirname / __filename — Node ESM reconstructions (via fileURLToPath)
-    //   _serviceClient — Supabase admin-client private convention (<consumer-a> / sroi)
+    //   _serviceClient — Supabase admin-client private convention (<consumer-a> / <consumer-d>)
     //   _samples / _corrupt / _evlogFlushPromise — internal audit/digest fields
     //     in vendor/scripts/*, plugins/hub-core/scripts/commit-lock.mjs, and
     //     vendor/snippets/evlog-drain-pipeline/* (all propagate to consumers).

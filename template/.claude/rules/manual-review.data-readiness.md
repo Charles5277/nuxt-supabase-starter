@@ -117,7 +117,7 @@ assertion-bearing `[verify:ui]` item（要驗「某具體內容有出現」而�
 
 該 consumer 有設 `TUNNEL_HOSTNAME` 卻在 item 寫 `http://localhost:<port>`：違反通則 § 1，user 開不了（手機 / iPad / 別台電腦無 localhost）、HTTPS-only feature（OAuth / WebAuthn / camera permission / `SameSite=None` cookie）也驗不到。`UI_URL_LOCALHOST_WITH_TUNNEL_AVAILABLE` audit pattern 會命中。
 
-❌ 不夠（<consumer-b> `.env.local` 有 `TUNNEL_HOSTNAME=tdms-dev.<maintainer-domain>` 卻寫 localhost）：
+❌ 不夠（<consumer-b> `.env.local` 有 `TUNNEL_HOSTNAME=<consumer-b>-dev.<maintainer-domain>` 卻寫 localhost）：
 
 ```markdown
 - [ ] #2 [verify:ui] 首頁 `http://localhost:3000/?machine=9001` 監控表格 inline 顯示建議壽命與 info icon
@@ -127,8 +127,8 @@ assertion-bearing `[verify:ui]` item（要驗「某具體內容有出現」而�
 ✅ 好（改用 tunnel host，保留原 path + query string）：
 
 ```markdown
-- [ ] #2 [verify:ui] 首頁 `https://tdms-dev.<maintainer-domain>/?machine=9001` 監控表格 inline 顯示建議壽命與 info icon
-  - [ ] #2.1 [verify:ui] 以 admin session 開 `https://tdms-dev.<maintainer-domain>/?machine=9001`，normal table 中 `<consumer-b>-SEED-SUGGESTED-LIFE-HEAD-IQM-001` 這列的「壽命狀態」欄位同時顯示既有本輪壽命資訊與建議壽命 `143 秒`。
+- [ ] #2 [verify:ui] 首頁 `https://<consumer-b>-dev.<maintainer-domain>/?machine=9001` 監控表格 inline 顯示建議壽命與 info icon
+  - [ ] #2.1 [verify:ui] 以 admin session 開 `https://<consumer-b>-dev.<maintainer-domain>/?machine=9001`，normal table 中 `<consumer-b>-SEED-SUGGESTED-LIFE-HEAD-IQM-001` 這列的「壽命狀態」欄位同時顯示既有本輪壽命資訊與建議壽命 `143 秒`。
 ```
 
 判斷準則（寫前自問）：

@@ -54,7 +54,7 @@ clade 規約管 capability，consumer 在 `registry/consumers.json` 宣告自家
 
 > 凡 worktree 專屬的 backing service（DB clone、PostgREST sidecar、任何 per-worktree daemon），其**存在性檢查 MUST 綁在「起 dev server」這個動作上**，不能只綁在「建 worktree」那一刻 —— 後者是一次性的，服務會在之後消失（`reconcile` 清掉、手動清理、主機重啟）。缺席時 **MUST** fail-loud 或自動補建，**NEVER** 讓它留到 runtime 由 app 層錯誤代言。
 
-Fail-loud 的訊息 **MUST 點名 backing service 本身與修復指令**（例：`DB clone tdms_wt_<slug> 不存在 → node scripts/worktree-db.mjs create --slug <slug>`）。**NEVER** 只說「後端連線失敗」——那正是要避免的那層代言。
+Fail-loud 的訊息 **MUST 點名 backing service 本身與修復指令**（例：`DB clone <consumer-b>_wt_<slug> 不存在 → node scripts/worktree-db.mjs create --slug <slug>`）。**NEVER** 只說「後端連線失敗」——那正是要避免的那層代言。
 
 **為什麼非綁在 dev server 啟動不可**：dev-session 這類 launcher 的成功判準通常是「port 有沒有 LISTENING」，而它對本問題**恆為真** —— app 起得來、只是打不到 DB。於是第一個發現異常的是瀏覽器，拿到的又是 app 為「後端暫時抖動」寫的 503/500 文案，完全指不到 DB。實測（<consumer-b> 2026-07-31）：修復只要兩個指令、數十秒，診斷卻花十幾輪，中途還跟兩個無關的 dev server 症狀混淆。**修復成本 ≈ 0，發現成本極高** —— 這個不對稱就是把檢查前移的全部理由。
 

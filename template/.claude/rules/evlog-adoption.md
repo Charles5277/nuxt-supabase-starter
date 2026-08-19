@@ -112,7 +112,7 @@ starter scaffolder（M3b 後支援 `--evlog-preset <name>` flag）：
 
 | Preset | 內含 = 哪些 T pre-applied | 適用情境 |
 | --- | --- | --- |
-| `evlog-baseline` | T1 全套（含 client transport） | 內部工具 / SROI 報告 / 教學系統 |
+| `evlog-baseline` | T1 全套（含 client transport） | 內部工具 / <consumer-d> 報告 / 教學系統 |
 | `evlog-d-pattern-audit` | T1 + O1（baseline + D-pattern + signed chain + outbox） | 多租戶 SaaS / 高合規（refund / billing / 政府報告） |
 | `evlog-nuxthub-ai` | T3 全套 | AI agent / RAG / agentic workflow |
 
@@ -134,7 +134,7 @@ starter scaffolder（M3b 後支援 `--evlog-preset <name>` flag）：
 | **5** | 4 + sampling + redaction policy + structured errors | starter / <consumer-b> / <consumer-a> 現況 |
 | **6** | 5 + client transport + typed fields + source location | T2 完成後 |
 | **6+O1** | 6 + D-pattern audit + evlog signed chain + auditDiff | <consumer-a> T2+O1 完成後 |
-| **AI variant** | 1 + AI SDK + MCP/SSE child logger（與 6 並行軸） | agentic-rag 現況；T3 拉到 NuxtHub D1 完整版 |
+| **AI variant** | 1 + AI SDK + MCP/SSE child logger（與 6 並行軸） | <consumer-c> 現況；T3 拉到 NuxtHub D1 完整版 |
 
 review 時 grep 出對應 marker：
 
@@ -261,7 +261,7 @@ rg -n "evlog-map-disable-next-line" server app | rg -v "—|--"
 
 ### MUST NOT
 
-- **MUST NOT** 在 catalog prefix 加 consumer namespace（**禁止** `tdms.auth.X` / `<consumer-a>.billing.X`）— 破壞 cross-consumer 聚合語意
+- **MUST NOT** 在 catalog prefix 加 consumer namespace（**禁止** `<consumer-b>.auth.X` / `<consumer-a>.billing.X`）— 破壞 cross-consumer 聚合語意
 - **MUST NOT** 在測試檔 hard-code error code 字串（用 `errors.X.code` 或 `catalog.X.code`，否則 catalog 改名測試漏網）
 - **MUST NOT** 在 `declare module 'evlog'` 寫進 `*.test.ts` / `*.spec.ts`（測試檔的 augmentation 不會散播到 production type space，反而誤導 IDE）
 - **MUST NOT** 在 enricher 內 `throw billingErrors.X()`（enricher 失敗會破整個 wide event；catalog error 限 endpoint handler 層）
@@ -296,7 +296,7 @@ rg -n "declare module ['\"]evlog['\"]" server/utils packages/**/server/utils | w
 rg -n "throw createError\\(" server/api packages/**/server/api | wc -l
 
 # Catalog prefix consumer-namespace 違反（block）
-rg -n "defineErrorCatalog\\(['\"](?:tdms|<consumer-a>|sroi|rag|starter)\\." server packages/**/server
+rg -n "defineErrorCatalog\\(['\"](?:<consumer-b>|<consumer-a>|<consumer-d>|rag|starter)\\." server packages/**/server
 
 # Catalog 測試 hard-code 字串（block）
 rg -nE "code:\\s*['\"][a-z][a-z0-9._]*\\.[A-Z_]+['\"]" "**/*.test.ts" "**/*.spec.ts"

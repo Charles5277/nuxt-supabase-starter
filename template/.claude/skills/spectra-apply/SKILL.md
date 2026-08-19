@@ -49,7 +49,7 @@ Implement tasks from a Spectra change.
 
    c.5. **Main-side unpark + commit-to-git**（clade fork addition；critical data-safety guardrail，per `docs/pitfalls/2026-05-22-agent-tool-subagent-worktree-bypass.md`）：
 
-      **理由**：spectra v3 `spectra park` 把 artifacts 從 disk 搬進 `.git/spectra-app/spectra.db` SQLite blob（**不在 git tracked file**）；後續 `spectra unpark` 會 restore artifacts 到 cwd 的 worktree disk 並把 SQLite parked 條目刪除。若 unpark 在 Claude Code `Agent` tool dispatched subagent 的 ephemeral cwd（`.claude/worktrees/agent-*/`，session 結束 GC）跑 → artifacts 寫進去就被 GC 清掉、SQLite 也沒了 → **永久遺失**（<consumer-e> 已撞，99 tasks + 5 specs + proposal 蒸發）。
+      **理由**：spectra v3 `spectra park` 把 artifacts 從 disk 搬進 `.git/spectra-app/spectra.db` SQLite blob（**不在 git tracked file**）；後續 `spectra unpark` 會 restore artifacts 到 cwd 的 worktree disk 並把 SQLite parked 條目刪除。若 unpark 在 Claude Code `Agent` tool dispatched subagent 的 ephemeral cwd（`.claude/worktrees/agent-*/`，session 結束 GC）跑 → artifacts 寫進去就被 GC 清掉、SQLite 也沒了 → **永久遺失**（<consumer-h> 已撞，99 tasks + 5 specs + proposal 蒸發）。
 
       因此 **MUST** 在 dispatch subagent **之前**，由主線在 main worktree（**或** Step 0c 剛 fork 出的 session worktree — 兩者都是 persistent disk，非 ephemeral）跑 unpark + commit-to-git，artifacts 落 git tracked file，subagent fork 出去後天然帶過、不再依賴 SQLite blob。
 
@@ -582,7 +582,7 @@ If there is no AskUserQuestion tool available, present options as plain text and
    1. 從 `proposal.md` 頂部抓 ticket `page_id`，從 consumer-meta `notion.dataSourceId` 抓 data source。
    2. `notion-fetch collection://<dataSourceId>` 重撈 schema 校對 property key（中文 + 全形空格 + `>=`，憑記憶必錯）。
    3. 確認該 change 有 active claim（per [[work-claims]]）。
-   4. ticket 狀態若停在 `未開始` / `需確認` → 依 `~/.claude/skills/_notion-tdms-board/REFERENCE.md §3` 授權表推 `→ 進行中`；已是 `進行中` / `驗收中` → no-op。
+   4. ticket 狀態若停在 `未開始` / `需確認` → 依 `~/.claude/skills/_notion-<consumer-b>-board/REFERENCE.md §3` 授權表推 `→ 進行中`；已是 `進行中` / `驗收中` → no-op。
 
    - **NEVER** 在此推 `驗收中`（需 git tag，archive → `/commit` 發版後才有；見 spectra-archive Step 8 + [[spectra-notion-coupling]]）。
    - **NEVER** 碰客戶側轉移（`驗收中→完成` 等）或 `發布日期` / `驗收日期` / `名稱` / `驗收完成` 欄位。

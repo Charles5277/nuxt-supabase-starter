@@ -1,5 +1,5 @@
 ---
-description: consumer 採用 Notion 制度時（consumer-meta 的 notion.ticketWorkflow 或 notion.projectWorkflow）適用。症狀：change 做完或發版了但 Notion 狀態還停在舊值、不知道某個 change 對應哪張 ticket 或哪個 User Story、Notion 現況與 git 實況對不上、拿不準該不該去碰 Notion。狀態轉移授權沿用全域 _notion-tdms-board/REFERENCE.md §3 表，不另造 state machine
+description: consumer 採用 Notion 制度時（consumer-meta 的 notion.ticketWorkflow 或 notion.projectWorkflow）適用。症狀：change 做完或發版了但 Notion 狀態還停在舊值、不知道某個 change 對應哪張 ticket 或哪個 User Story、Notion 現況與 git 實況對不上、拿不準該不該去碰 Notion。狀態轉移授權沿用全域 _notion-<consumer-b>-board/REFERENCE.md §3 表，不另造 state machine
 paths: ['openspec/changes/**', '.claude/consumer-meta.json']
 ---
 <!--
@@ -14,7 +14,7 @@ Local edits will be reverted by the next sync.
 
 **核心命題**：consumer 若有 Notion ticket 制度，change 的 Notion ticket 狀態**不能跟 spectra 生命週期脫鉤**。最常見的漏洞是「apply 做完 / 發版了，但對應 ticket 還停在『進行中』甚至『需確認』」——客戶看 board 以為沒人動。本規則把「change 生命週期事件 → ticket 狀態轉移」綁成**明文 workflow 步驟**，由 spectra-apply / spectra-archive 收尾主動推進，**不靠事後想起來**。
 
-此規則優先於個別 skill 的 ad-hoc Notion 描述。狀態轉移授權**一律**沿用全域 `~/.claude/skills/_notion-tdms-board/REFERENCE.md §3` 的轉移表（單一真相層），本檔**不**重述 state machine、**不**新增 status 值。
+此規則優先於個別 skill 的 ad-hoc Notion 描述。狀態轉移授權**一律**沿用全域 `~/.claude/skills/_notion-<consumer-b>-board/REFERENCE.md §3` 的轉移表（單一真相層），本檔**不**重述 state machine、**不**新增 status 值。
 
 ---
 
@@ -67,7 +67,7 @@ Local edits will be reverted by the next sync.
 
 ## 執行機制
 
-- **入口**：走 `/notion-board`（inbound 全生命週期 skill）的狀態同步路徑，或依 `_notion-tdms-board/REFERENCE.md §3/§4` 直接 `ntn api -X PATCH "/v1/pages/<page_id>"` 改單一 `狀態` / `修復版本 >=` 欄位。
+- **入口**：走 `/notion-board`（inbound 全生命週期 skill）的狀態同步路徑，或依 `_notion-<consumer-b>-board/REFERENCE.md §3/§4` 直接 `ntn api -X PATCH "/v1/pages/<page_id>"` 改單一 `狀態` / `修復版本 >=` 欄位。
 - **寫入前 MUST**：`notion-fetch collection://<dataSourceId>`（consumer-meta `notion.dataSourceId`）重撈 schema，property key（中文 + 全形空格 + `>=`）一字不差 copy-paste，**NEVER** 憑記憶拼 property 名（REFERENCE.md §2 hard rule）。
 - **欄位邊界**（REFERENCE.md §2）：只寫 `狀態` 與 `修復版本 >=`（+ 必要時 `備註` 補開發備註）。**NEVER** 動 `名稱`（客戶原始描述）、`發布日期`（客戶提報日，不是發版日）、`驗收日期`（客戶側）、`驗收完成`（系統 readOnly）。
 
@@ -82,7 +82,7 @@ consumer 在自家 `.claude/consumer-meta.json` 加（schema 見 `registry/consu
   "ticketWorkflow": true,
   "boardDatabaseId": "<database-id>",
   "dataSourceId": "<data-source-id>",      // 建/改 page 用這個
-  "referenceSkill": "_notion-tdms-board"   // 全域 skill dir，承載該 board 的真相層（座標 / schema / 狀態機）
+  "referenceSkill": "_notion-<consumer-b>-board"   // 全域 skill dir，承載該 board 的真相層（座標 / schema / 狀態機）
 }
 ```
 
@@ -207,7 +207,7 @@ Notion **不支援 rollup of rollup**：`Epic.進度` 已經是 rollup(Story)，
 
 | 主題 | 真相層 |
 | --- | --- |
-| Notion 狀態機 + 轉移授權表 + 欄位邊界 + 版本對照 | `~/.claude/skills/_notion-tdms-board/REFERENCE.md` §2–§4（單一真相層） |
+| Notion 狀態機 + 轉移授權表 + 欄位邊界 + 版本對照 | `~/.claude/skills/_notion-<consumer-b>-board/REFERENCE.md` §2–§4（單一真相層） |
 | inbound ticket 全生命週期（scan / triage / sync / report） | `~/.claude/skills/notion-board/SKILL.md` |
 | outbound 決策題建立 ticket | `~/.claude/skills/notion-ticket/SKILL.md` |
 | consumer 能力宣告 / aggregator | [[consumer-meta]] |

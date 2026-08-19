@@ -442,7 +442,7 @@ awk '/^## 人工檢查/{mr=1; next} /^## /{mr=0} !mr && /^- \[ \]/{print NR": "$
 
    1. 抓 ticket `page_id`（proposal.md 頂部）+ consumer-meta `notion.dataSourceId`。
    2. `notion-fetch collection://<dataSourceId>` 重撈 schema 校對 property key（中文 + 全形空格 + `>=`，憑記憶必錯）。
-   3. **Ensure 進行中**：ticket 若還停在 `未開始` / `需確認` → 補轉 `→ 進行中`（per `~/.claude/skills/_notion-tdms-board/REFERENCE.md §3`）。
+   3. **Ensure 進行中**：ticket 若還停在 `未開始` / `需確認` → 補轉 `→ 進行中`（per `~/.claude/skills/_notion-<consumer-b>-board/REFERENCE.md §3`）。
    4. **Pending 驗收中**：archive 是 bookkeeping，**此刻尚無本次發版 git tag**（標準順序「先 archive 再 `/commit`」，tag 在 `/commit` Step 5 才生）→ **NEVER 在此推 `驗收中`**；改在 Step 8 summary 明文列 pending 動作（見下），由緊接的 `/commit` 發版後**同一主線**完成 `進行中 → 驗收中` + 填 `修復版本 >= <tag>`。
 
    **NEVER** 在 archive 當下標 `驗收中`（無 tag）或填 `修復版本 >=`。**NEVER** 碰客戶側轉移（`驗收中→完成` 等）或 `發布日期` / `驗收日期` / `名稱` / `驗收完成` 欄位。

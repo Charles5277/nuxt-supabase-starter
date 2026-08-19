@@ -63,7 +63,7 @@ export const LOCKED_PROJECTION_RE = new RegExp(
       String.raw`scripts/(spectra-advanced|pre-commit|pre-push|checks)/`,
       // Vendored helpers under scripts/lib/ — MUST stay an explicit filename list.
       // NEVER widen to `scripts/lib/`: consumers author their own files there
-      // (<consumer-a> `common.sh` / `read-infra-manifest.mjs`, yuntech `vue-component-resolution.ts`),
+      // (<consumer-a> `common.sh` / `read-infra-manifest.mjs`, <consumer-d> `vue-component-resolution.ts`),
       // and matching the whole dir would mark those clade-managed → auto-reset clobbers them.
       String.raw`scripts/lib/(evidence-store|detect-runtime|wt-env-bootstrap-runner|dev-workspace)\.(mjs|mts|ts)$`,
       // Snippets / shared presets
